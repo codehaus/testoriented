@@ -1,16 +1,25 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.core.search.SearchParticipant;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -91,7 +100,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	void generateTest(IMethod method) {
 		ICompilationUnit testClass = fetchAssociatedTestClass ( method );
 		if (null == testClass) {
-			// fetchTestClass may return nothing, thus we do nothing  
+			// fetchTestClass (currently) may return nothing, thus we do nothing  
 			return;
 		}
 		// TODO: Open an editor for testClass
@@ -137,10 +146,78 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 		IPackageFragment parentPackage = testedType.getPackageFragment();
 		String packageName = parentPackage.getElementName();
 		
-		// TODO: search for class with same name in package (package + ".test")
-		// TODO: If none are found, create one.
+		// Search for class with same name in package (package + ".test")
+		String associatedTestClassName = packageName + ".test." + className;
+		List<SearchMatch> results = findClass(associatedTestClassName);
+		// If none are found...
+		if ( null == results || 0 == results.size() ) {
+			// TODO: Create an associated test class
+			return null;
+		}
+		SearchMatch sm = results.get(0);
+		if ( results.size() > 1 ) {
+			// TODO: is this even possible with the current search?
+			// Disambiguate somehow to find a single match.
+		}
+		Object element = sm.getElement();
+		IType associatedClass = null;
+		if (element instanceof IType) {
+			associatedClass = (IType) element;
+		}
+		if (null == associatedClass) {
+			// element can be null for some reason or could represent something
+			// else altogether
+			// TODO: Create an associated test class
+			return null;
+		}
 		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
-		return null;
+		ICompilationUnit potentialCU = associatedClass.getCompilationUnit();
+		if (null == potentialCU) {
+			// getCompilationUnit could return null if it's a binary type
+			// TODO: Create a new associated test class??
+		}
+		return potentialCU;
+	}
+
+	/**
+	 * Uses the JDT {@link SearchEngine} to find a class matching the specified
+	 * <i>fullyQualifiedClassName</i> in the Eclipse Workspace.
+	 * @param fullyQualifiedClassName The name of the package and class to find. 
+	 * @return A list of {@link SearchMatch} instances or <code>null</code> if
+	 * there was a problem with the search. 
+	 * (and thus probably a bug in this code!)
+	 */
+	List<SearchMatch> findClass(String fullyQualifiedClassName) {
+		SearchPattern pattern = SearchPattern.createPattern (
+				fullyQualifiedClassName, 
+				IJavaSearchConstants.CLASS, 
+				IJavaSearchConstants.DECLARATIONS, 
+				SearchPattern.R_EXACT_MATCH );
+		if (null == pattern) {
+			// createPattern can return null if the pattern is ill-formed.
+			// TODO: Determine if returning null is a wise thing to do here
+			return null;
+		}
+		IJavaSearchScope scope = SearchEngine.createWorkspaceScope ( );
+		SearchEngine se = new SearchEngine ( );
+		SimpleSearchRequestor requestor = new SimpleSearchRequestor ();
+		try {
+			se.search(
+				pattern, 
+				new SearchParticipant[] { 
+						SearchEngine.getDefaultSearchParticipant()
+				}, 
+				scope, 
+				requestor, 
+				null);
+		} catch (CoreException e) {
+			// The search might fail because the classpath is incorrectly set
+			// TODO: report this to the user
+			return null;
+		}
+		
+		List<SearchMatch> results = requestor.getResults();
+		return results;
 	}
 
 	/**
