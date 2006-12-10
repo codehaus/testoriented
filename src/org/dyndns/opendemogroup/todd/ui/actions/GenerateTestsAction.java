@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.Flags;
-import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageDeclaration;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
@@ -86,14 +89,58 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @param method The method for which a test is to be generated.
 	 */
 	void generateTest(IMethod method) {
-		// TODO: determine eachMethod's class and package names
-		// TODO: search for class with same name in package (package + ".test")
-		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
-		// TODO: If so, open an editor for it, otherwise return right away.
+		ICompilationUnit testClass = fetchAssociatedTestClass ( method );
+		if (null == testClass) {
+			// fetchTestClass may return nothing, thus we do nothing  
+			return;
+		}
+		// TODO: Open an editor for testClass
 		// TODO: Search for a spot to insert the new test method:
 		// After last occurence of eachMethod.getName, or as the last method.
 		// Use IType.createMethod
 		// TODO: Consider scanning for special comments delineating test regions
+	}
+	
+
+	/**
+	 * Attempts to find or create an associated test class for the class in
+	 * which the specified <i>testedMethod</i> is found.
+	 * @param testedMethod The {@link IMethod} instance for which to obtain an
+	 * associated test class.
+	 * @return An {@link ICompilationUnit} which represents the associated
+	 * test class.
+	 */
+	ICompilationUnit fetchAssociatedTestClass(IMethod testedMethod) {
+		// determine method's class and package names
+		IJavaElement potentialClass = testedMethod.getParent();
+		IType parentClass = null;
+		if (potentialClass instanceof IType) {
+			parentClass = (IType) potentialClass;
+		}
+		if (null == parentClass) {
+			// TODO: determine under which circumstances this would happen
+			return null;
+		}
+		return fetchAssociatedTestClass(parentClass);
+	}
+
+	/**
+	 * Attempts to find or create an associated test class for the class in
+	 * which the specified <i>testedType</i> is found.
+	 * @param testedType The {@link IType} instance for which to obtain an
+	 * associated test class.
+	 * @return An {@link ICompilationUnit} which represents the associated
+	 * test class.
+	 */
+	ICompilationUnit fetchAssociatedTestClass(IType testedType) {
+		String className = testedType.getElementName();
+		IPackageFragment parentPackage = testedType.getPackageFragment();
+		String packageName = parentPackage.getElementName();
+		
+		// TODO: search for class with same name in package (package + ".test")
+		// TODO: If none are found, create one.
+		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
+		return null;
 	}
 
 	/**
