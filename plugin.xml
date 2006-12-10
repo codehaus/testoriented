@@ -5,12 +5,24 @@
          point="org.eclipse.ui.popupMenus">
       <objectContribution
             adaptable="true"
+            id="org.dyndns.opendemogroup.todd.contributions.type"
+            nameFilter="*"
+            objectClass="org.eclipse.jdt.core.IType">
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
+               enablesFor="+"
+               id="org.dyndns.opendemogroup.todd.contributions.type.generateTestsAction"
+               label="%action.generateTests"
+               menubarPath="additions"/>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
             id="org.dyndns.opendemogroup.todd.contributions.file"
             nameFilter="*.java"
             objectClass="org.eclipse.core.resources.IFile">
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
-               enablesFor="1"
+               enablesFor="+"
                id="org.dyndns.opendemogroup.todd.contributions.file.generateTestsAction"
                label="%action.generateTests"
                menubarPath="additions"/>
@@ -26,6 +38,15 @@
                label="%action.generateTests"
                menubarPath="additions"/>
       </objectContribution>
+      <viewerContribution
+            id="org.dyndns.opendemogroup.todd.contributions.viewer"
+            targetID="org.eclipse.jdt.ui.CompilationUnitEditor.EditorContext">
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
+               id="org.dyndns.opendemogroup.todd.contributions.editor.generateTestsAction"
+               label="%action.generateTests"
+               menubarPath="additions"/>
+      </viewerContribution>
    </extension>
 
 </plugin>

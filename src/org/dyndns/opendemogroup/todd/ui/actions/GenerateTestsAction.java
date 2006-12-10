@@ -1,6 +1,7 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
@@ -22,21 +23,38 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorActionDelegate;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 public class GenerateTestsAction 
-	implements IObjectActionDelegate {
+	implements IObjectActionDelegate, IEditorActionDelegate {
 
 	/**
 	 * Target instances to operate on.  In our case, it will most likely be
 	 * methods ({@link IMethod}) and classes ({@link IFile} and {@link IType}). 
 	 */
 	List _Members = null;
+
+	/**
+	 * @see org.eclipse.ui.IEditorActionDelegate#setActiveEditor(org.eclipse.jface.action.IAction, org.eclipse.ui.IEditorPart)
+	 */
+	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
+		// TODO: we may want to store the active editor for future optimization
+		// Do nothing (on purpose).
+	}
 
 	/**
 	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
@@ -46,31 +64,50 @@ public class GenerateTestsAction
 	}
 
 	/**
-	 * Records the current selection for possible future processing using
-	 * {@link #run(IAction)}.
+	 * Records the current selection (if it's structured) for possible future
+	 * processing using {@link #run(IAction)}.
 	 * 
 	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO: Handle non-outline (JavaEditor) invocations
+		_Members = null;
+		// TODO: Review comment #3 of Eclipse bug 118543:
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=118543#c3
+		// ...to see if we should structure this code block differently.
 		if (selection instanceof IStructuredSelection) {
+			// we were invoked from the Outline or Package Explorer 
 			IStructuredSelection ss = (IStructuredSelection) selection;
+			// what to operate on is trivial to extract
 			_Members = ss.toList();
-		}
-		else {
-			_Members = null;
+		} else if (selection instanceof ITextSelection) {
+			// we were invoked from the Java Editor
+
+			// It doesn't appear that this event is fired reliably or
+			// frequently enough for us to do anything (such as enable/disable)
+			// and thus we simply do nothing so that #run(IAction), seeing that
+			// _Members is null, will try to discover a useful selection and use
+			// it.
+		} else {
 			// TODO: Remove this once we no longer need it
-			System.out.print ( "    -> Selection type not yet handled: " );
-			System.out.println ( selection );
-		}
-		
-		action.setEnabled( _Members != null );
+			System.out.print("    -> Selection type not yet handled: ");
+			System.out.println(selection);
+		}		
 	}
 
 	/**
 	 * @see IActionDelegate#run(IAction)
 	 */
 	public void run(IAction action) {
+		if (null == _Members) {
+			// no selection from selectionChanged, try to guess one from the
+			// active editor's cursor location
+			IJavaElement element = getSelectedElement();
+			if (element != null) {
+				_Members = new ArrayList(1);
+				_Members.add(element);
+			}
+		}
+		
 		if ( _Members != null ) {
 			for ( Object each : _Members ) {
 				if (each instanceof IMethod) {
@@ -82,8 +119,6 @@ public class GenerateTestsAction
 					catch ( JavaModelException jme ) {
 						// TODO: Find out when this is thrown and see if there's
 						// a better reaction than simply stopping everything.
-						System.out.print ( "    -> JME thrown: " );
-						System.out.println ( jme );
 						return;
 					}
 					// TODO: move this check to selectionChanged if possible
@@ -111,14 +146,67 @@ public class GenerateTestsAction
 					// an instance of File when I think I'm on a Class...
 					// This may be because I defined an extension on IFile?!?!?
 					IType eachClass = (IType) each;
+					// TODO: The following TODOs might be better handled
+					// transparently by generateTest if we invoke it on all of
+					// eachClass' methods, in a loop.
 					// TODO: determine if eachClass is abstract and react accordingly
 					// TODO: write a testcase class
 					// TODO: Consider invoking the current "New JUnit Test Case" wizard
 				}
 			}
+			// TODO: Might need to have this happen in a "finally" block
+			_Members = null;
 		}
 	}
 
+	/**
+	 * Returns the smallest element within the active editor's compilation unit
+	 * that includes the current cursor location (that is, a method, field, 
+	 * etc.), or <code>null</code> if there is no element other than the
+	 * compilation unit itself at the cursor's current position, or if the
+	 * current cursor position is not within the source range of this
+	 * compilation unit.
+	 * 
+	 * @return The innermost Java element enclosing the given source position or
+	 * <code>null</code> if none (excluding the compilation unit).
+	 * 
+	 * @see ICompilationUnit#getElementAt(int);
+	 */
+	IJavaElement getSelectedElement ( ) {
+		// TODO: See if we can optimize the traversal by using the result of
+		// IEditorActionDelegate#setActiveEditor(IAction, IEditorPart)
+		// TODO: Many of the intermediary steps here could return null
+		// for various reasons and thus in those cases so should we.
+		IJavaElement element = null;
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		IWorkbenchWindow activeWorkbenchWindow = 
+			workbench.getActiveWorkbenchWindow();
+		IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+		IEditorPart activeEditor = activePage.getActiveEditor();
+		IEditorSite site = activeEditor.getEditorSite();
+		ISelectionProvider provider = site.getSelectionProvider();
+		ISelection selection = provider.getSelection();
+		if (selection instanceof ITextSelection) {
+			ITextSelection textSelection = (ITextSelection) selection;
+			IEditorInput editorInput = activeEditor.getEditorInput();
+			// editorInputJavaElement should be an ICompilationUnit
+			IJavaElement editorInputJavaElement = 
+				JavaUI.getEditorInputJavaElement(editorInput);
+			if (editorInputJavaElement instanceof ICompilationUnit) {
+				ICompilationUnit cu = (ICompilationUnit) editorInputJavaElement;
+				try {
+					element = 
+						cu.getElementAt(textSelection.getOffset());
+				} catch (JavaModelException jme) {
+					// jme thrown if the cu does not exist (shouldn't happen)
+					// or if something horrible happens while accessing its
+					// resource
+				}
+			}
+		}
+		return element;
+	}
+	
 	/**
 	 * Given an {@link IMethod} instance, will attempt to generate a JUnit test
 	 * method for it in an appropriate associated test class.
@@ -142,7 +230,12 @@ public class GenerateTestsAction
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
-		// TODO: cu could be null if testClass is not declared in a compilation unit
+		// cu could be null if testClass is not declared in a compilation unit
+		if (null == cu) {
+			// TODO: Apologize to the user for not being able to generate the
+			// test for them.
+			return;
+		}
 		IEditorPart javaEditor = null;
 		try {
 			javaEditor = JavaUI.openInEditor ( cu );
@@ -307,6 +400,9 @@ public class GenerateTestsAction
 	 * ready to have methods added to it to test <i>testedType</i>.
 	 */
 	IType createAssociatedTestClass ( IType testedType ) {
+		// TODO: Consider invoking the current "New JUnit Test Case" wizard,		
+		// which might just be the methods JavaUI.createMainTypeDialog or
+		// JavaUI.createTypeDialog
 		String className = testedType.getElementName();
 		IPackageFragment parentPackage = testedType.getPackageFragment();
 		String newLine = determineLineSeparator(testedType);
