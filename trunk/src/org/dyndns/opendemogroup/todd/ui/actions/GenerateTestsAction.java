@@ -1,6 +1,6 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
@@ -19,7 +19,6 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -98,16 +97,47 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @param method The method for which a test is to be generated.
 	 */
 	void generateTest(IMethod method) {
-		ICompilationUnit testClass = fetchAssociatedTestClass ( method );
+		IType testClass = fetchAssociatedTestClass ( method );
 		if (null == testClass) {
 			// fetchTestClass (currently) may return nothing, thus we do nothing  
 			return;
 		}
-		// TODO: Open an editor for testClass
+		
 		// TODO: Search for a spot to insert the new test method:
 		// After last occurence of eachMethod.getName, or as the last method.
-		// Use IType.createMethod
 		// TODO: Consider scanning for special comments delineating test regions
+		String contents = generateTestMethodContents(method);
+		// TODO: Open an editor for testClass, so the user can see the
+		// newly-added method in context and then adjust it accordingly.
+		try {
+			testClass.createMethod(contents, null, true, null);
+		} catch (JavaModelException jme) {
+			// JME might be thrown for various reasons (see documentation)
+			// TODO: we should report this to the user 
+			return;
+		}
+	}
+
+	/**
+	 * Generates a string representation of a JUnit 4 test method that tests
+	 * <i>methodToTest</i>.
+	 * @param methodToTest The {@link IMethod} instance for which a test method
+	 * will be generated.
+	 * @return A string representing the method to be added to the test fixture
+	 * that will exercise <i>methodToTest</i> after the user fills in a few
+	 * TODOs.
+	 */
+	public static String generateTestMethodContents(IMethod methodToTest) {
+		String methodName = methodToTest.getElementName();
+		// TODO: de-hardcode this method template for customization purposes
+		// TODO: Also generate a call to the method under test with
+		// auto-generated default values for its parameters.
+		String testMethodTemplate =
+			"{1}/**{1} * Tests the <i>{0}</i> method with {1} * TODO: write about scenario{1} */{1}@Test public void {0}_TODO ( ) '{' {1}\t// TODO: invoke {0} and assert properties of its effects/output{1}\tfail ( \"Test not yet written\" ); {1}}{1}";
+		String newLine = System.getProperty("line.separator");
+		String contents = 
+			MessageFormat.format( testMethodTemplate, methodName, newLine );
+		return contents;
 	}
 	
 
@@ -119,15 +149,12 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @return An {@link ICompilationUnit} which represents the associated
 	 * test class.
 	 */
-	ICompilationUnit fetchAssociatedTestClass(IMethod testedMethod) {
+	IType fetchAssociatedTestClass(IMethod testedMethod) {
 		// determine method's class and package names
-		IJavaElement potentialClass = testedMethod.getParent();
-		IType parentClass = null;
-		if (potentialClass instanceof IType) {
-			parentClass = (IType) potentialClass;
-		}
+		IType parentClass = testedMethod.getDeclaringType();
 		if (null == parentClass) {
-			// TODO: determine under which circumstances this would happen
+			// A method could be declared in a top-level type
+			// TODO: Is test writing impossible, then?
 			return null;
 		}
 		return fetchAssociatedTestClass(parentClass);
@@ -141,7 +168,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @return An {@link ICompilationUnit} which represents the associated
 	 * test class.
 	 */
-	ICompilationUnit fetchAssociatedTestClass(IType testedType) {
+	IType fetchAssociatedTestClass(IType testedType) {
 		String className = testedType.getElementName();
 		IPackageFragment parentPackage = testedType.getPackageFragment();
 		String packageName = parentPackage.getElementName();
@@ -171,12 +198,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 			return null;
 		}
 		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
-		ICompilationUnit potentialCU = associatedClass.getCompilationUnit();
-		if (null == potentialCU) {
-			// getCompilationUnit could return null if it's a binary type
-			// TODO: Create a new associated test class??
-		}
-		return potentialCU;
+		return associatedClass;
 	}
 
 	/**
