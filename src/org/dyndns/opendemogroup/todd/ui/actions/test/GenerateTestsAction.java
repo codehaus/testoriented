@@ -250,21 +250,29 @@ public class GenerateTestsAction extends org.dyndns.opendemogroup.todd.ui.action
 	}
 		
 	/**
-	 * A rather lame test but Java's lack of multi-line strings makes testing
-	 * this rather difficult and so most of the code being tested is also in 
-	 * here.
+	 * A slightly lame test of 
+	 * {@link org.dyndns.opendemogroup.todd.GenerateTestsAction#generateTestMethodContents(IMethod,String)}
+	 * that exercises the typical use.
 	 */
 	@Test
 	public void generateTestMethodContents_Typical ( ) {
 		TestingMethod t = new TestingMethod ();
-		String methodName = "Unformat";
-		t.setElementName(methodName);
-		String actual = generateTestMethodContents(t);
-		String testMethodTemplate =
-			"{1}/**{1} * Tests the <i>{0}</i> method with {1} * TODO: write about scenario{1} */{1}@Test public void {0}_TODO ( ) '{' {1}\t// TODO: invoke {0} and assert properties of its effects/output{1}\tfail ( \"Test not yet written\" ); {1}}{1}";
+		t.setElementName("Unformat");
 		String newLine = System.getProperty("line.separator");
+		String actual = generateTestMethodContents(t, newLine);
+		String testMethodTemplate =
+			"{0}" +
+			"/**{0}" +
+			" * Tests the <i>Unformat</i> method with {0}" +
+			" * TODO: write about scenario{0}" +
+			" */{0}" +
+			"@Test public void Unformat_TODO ( ) '{' {0}" +
+			"\t// TODO: invoke Unformat and assert properties of its effects/output{0}" +
+			"\tfail ( \"Test not yet written\" ); {0}" +
+			"}{0}" +
+			"";
 		String expected = 
-			MessageFormat.format( testMethodTemplate, methodName, newLine );
+			MessageFormat.format( testMethodTemplate, newLine );
 		assertEquals(expected, actual);
 	}
 
