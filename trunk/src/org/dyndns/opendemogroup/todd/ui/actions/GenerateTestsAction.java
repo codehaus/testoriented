@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -19,11 +21,14 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 
 public class GenerateTestsAction implements IObjectActionDelegate {
 
@@ -100,22 +105,68 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 		IType testClass = fetchAssociatedTestClass ( method );
 		if (null == testClass) {
 			// fetchTestClass (currently) may return nothing, thus we do nothing  
+			// TODO: When fetchTestClass no longer technically returns null,
+			// apologize to the user for not being able to generate the
+			// test for them.
 			return;
 		}
 		
 		// TODO: Search for a spot to insert the new test method:
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
-		String contents = generateTestMethodContents(method);
-		// TODO: Open an editor for testClass, so the user can see the
+		String newLine = determineLineSeparator(testClass);
+		String contents = generateTestMethodContents ( method, newLine );
+		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
+		ICompilationUnit cu = testClass.getCompilationUnit();
+		// TODO: cu could be null if testClass is not declared in a compilation unit
+		IEditorPart javaEditor = null;
 		try {
-			testClass.createMethod(contents, null, true, null);
+			javaEditor = JavaUI.openInEditor ( cu );
+		} catch (PartInitException pie) {
+			// pie thrown "if the editor could not be initialized",
+			// so fall through to the null check
+		} catch (JavaModelException jme) {
+			// jme may be thrown for various reasons which shouldn't really
+			// happen in our case, so fall through to the null check
+		}
+		if (null == javaEditor) {
+			// no editor means I'm not writing a test!
+			// TODO: Apologize to the user for not being able to generate the
+			// test for them.
+			return;
+		}
+		IMethod testMethod;
+		try {
+			testMethod = testClass.createMethod(contents, null, true, null);
 		} catch (JavaModelException jme) {
 			// JME might be thrown for various reasons (see documentation)
 			// TODO: we should report this to the user 
 			return;
 		}
+		JavaUI.revealInEditor(javaEditor, (IJavaElement)testMethod);
+	}
+
+	/**
+	 * Attempts to determine the line separator character(s) for the supplied
+	 * <i>targetClass</i> with a default of whatever the platform's
+	 * <i>line.separator</i> property is.
+	 * @param targetClass The {@link IType} instance for which the line
+	 * separator is to be determined. 
+	 * @return A string representing the character(s) to use between lines of
+	 * text.
+	 */
+	private String determineLineSeparator(IType targetClass) {
+		IOpenable openableTestClass = targetClass.getOpenable();
+		String newLine = System.getProperty("line.separator");
+		try {
+			newLine = openableTestClass.findRecommendedLineSeparator();
+		} catch (JavaModelException jme) {
+			// jme may be thrown for various reasons which don't impact us,
+			// and thus we ignore since we already have a reasonably sensible
+			// default value for newLine
+		}
+		return newLine;
 	}
 
 	/**
@@ -123,18 +174,19 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * <i>methodToTest</i>.
 	 * @param methodToTest The {@link IMethod} instance for which a test method
 	 * will be generated.
+	 * @param newLine The character or character sequence to use as a line
+	 * separator in code.
 	 * @return A string representing the method to be added to the test fixture
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public static String generateTestMethodContents(IMethod methodToTest) {
+	public static String generateTestMethodContents(IMethod methodToTest, String newLine) {
 		String methodName = methodToTest.getElementName();
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
 		// auto-generated default values for its parameters.
 		String testMethodTemplate =
 			"{1}/**{1} * Tests the <i>{0}</i> method with {1} * TODO: write about scenario{1} */{1}@Test public void {0}_TODO ( ) '{' {1}\t// TODO: invoke {0} and assert properties of its effects/output{1}\tfail ( \"Test not yet written\" ); {1}}{1}";
-		String newLine = System.getProperty("line.separator");
 		String contents = 
 			MessageFormat.format( testMethodTemplate, methodName, newLine );
 		return contents;
