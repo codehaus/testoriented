@@ -21,7 +21,6 @@ public class SimpleSearchRequestor extends SearchRequestor {
 	 */
 	@Override
 	public void acceptSearchMatch(SearchMatch match) throws CoreException {
-		// TODO Auto-generated method stub
 		results.add(match);
 	}
 

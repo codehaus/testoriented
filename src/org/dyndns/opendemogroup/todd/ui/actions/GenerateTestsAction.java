@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -42,6 +41,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
 	 */
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+		// Do nothing (on purpose).
 	}
 
 	/**
@@ -186,13 +186,21 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 		// TODO: Also generate a call to the method under test with
 		// auto-generated default values for its parameters.
 		String testMethodTemplate =
-			"{1}/**{1} * Tests the <i>{0}</i> method with {1} * TODO: write about scenario{1} */{1}@Test public void {0}_TODO ( ) '{' {1}\t// TODO: invoke {0} and assert properties of its effects/output{1}\tfail ( \"Test not yet written\" ); {1}}{1}";
+			"{1}" +
+			"/**{1}" +
+			" * Tests the <i>{0}</i> method with {1}" +
+			" * TODO: write about scenario{1}" +
+			" */{1}" +
+			"@Test public void {0}_TODO ( ) '{' {1}" +
+			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
+			"\tfail ( \"Test not yet written\" ); {1}" +
+			"}{1}" +
+			"";
 		String contents = 
 			MessageFormat.format( testMethodTemplate, methodName, newLine );
 		return contents;
 	}
 	
-
 	/**
 	 * Attempts to find or create an associated test class for the class in
 	 * which the specified <i>testedMethod</i> is found.
@@ -225,13 +233,18 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 		IPackageFragment parentPackage = testedType.getPackageFragment();
 		String packageName = parentPackage.getElementName();
 		
-		// Search for class with same name in package (package + ".test")
-		String associatedTestClassName = packageName + ".test." + className;
+		// TODO: Parameterize (and centralize) the convention; old one follows  
+		// Search for class with same name in package (packageName + ".test")
+		// String associatedTestClassName = packageName + ".test." + className;
+		
+		// Search for class with name (className + "Test") in same package
+		String associatedTestClassName = packageName + "." + className + "Test";
 		List<SearchMatch> results = findClass(associatedTestClassName);
 		// If none are found...
+		IType associatedClass = null;
 		if ( null == results || 0 == results.size() ) {
-			// TODO: Create an associated test class
-			return null;
+			associatedClass = createAssociatedTestClass ( testedType );
+			return associatedClass;
 		}
 		SearchMatch sm = results.get(0);
 		if ( results.size() > 1 ) {
@@ -239,18 +252,132 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 			// Disambiguate somehow to find a single match.
 		}
 		Object element = sm.getElement();
-		IType associatedClass = null;
 		if (element instanceof IType) {
 			associatedClass = (IType) element;
+			// TODO: Is it a test class? 
+			// For example, does it contain references to org.junit.*?
 		}
 		if (null == associatedClass) {
 			// element can be null for some reason or could represent something
 			// else altogether
-			// TODO: Create an associated test class
+			associatedClass = createAssociatedTestClass ( testedType );
+		}
+		return associatedClass;
+	}
+
+	/**
+	 * Given an <code>IType</code> instance, will attempt to create another
+	 * <code>IType</code> that represents a JUnit 4 test class intended to
+	 * test <i>testedType</i>.
+	 * @param testedType The {@link IType} for which a test fixture will be
+	 * generated and added to the workspace.
+	 * @return An <code>IType</code>, in its own {@link ICompilationUnit},
+	 * ready to have methods added to it to test <i>testedType</i>.
+	 */
+	private	IType createAssociatedTestClass ( IType testedType ) {
+		String className = testedType.getElementName();
+		IPackageFragment parentPackage = testedType.getPackageFragment();
+		String newLine = determineLineSeparator(testedType);
+		String compilationUnitContents = 
+			generateCompilationUnitContents(parentPackage, newLine);
+		// TODO: Parameterize the convention somehow (Strategy pattern?)
+		String testClassName = className + "Test";
+		ICompilationUnit associatedUnit = null;
+		try {
+			associatedUnit = 
+				parentPackage.createCompilationUnit(
+					testClassName + ".java", 
+					compilationUnitContents, 
+					false, 
+					null);
+		} catch (JavaModelException jme) {
+			// jme thrown if name is not a valid CU name (can this even happen?)
+			// or some other catastrophic error
 			return null;
 		}
-		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
+		IType associatedClass = null;
+		String classContents = 
+			generateTestClassContents(className, testClassName, newLine);
+		try {
+			associatedClass = 
+				associatedUnit.createType(
+						classContents, 
+						null, 
+						true, 
+						null);
+		} catch (JavaModelException jme) {
+			// jme thrown if sibling does not exist or is invalid (which is
+			// impossible in our case because we give "null"), there's a naming
+			// collision with an existing type (which should be impossible,
+			// otherwise the detection would have found it -- or there's a
+			// really weird package organization going on), the contents
+			// is not a type declaration (a bug in this code) or some other
+			// core error.
+			return null;
+		}
 		return associatedClass;
+	}
+
+	/**
+	 * Generates a string representation of a JUnit 4 test class, which will
+	 * host tests for the class <i>className</i> and be called
+	 * <i>testClassName</i>.
+	 * @param className The name of the class to test.
+	 * @param testClassName The name of the test class, which will contain tests
+	 * for the class called <i>className</i>.
+	 * @param newLine The character or character sequence to use as a line
+	 * separator in code.
+	 * @return A string representing a class declaration for JUnit testing
+	 * purposes.
+	 */
+	public static String generateTestClassContents(String className, String testClassName, String newLine) {
+		// TODO: In some cases, it may be desirable to have testClass derive
+		// from class, so that protected methods can be exercised.
+		// TODO: de-hardcode this class declaration template for customization
+		// purposes, or at least initialize it from Eclipse's set of templates
+		String classContentsTemplate = 
+			"/**{0}" +
+			" * A class to test the class {2}{0}" +
+			" */{0}" +
+			"public class {1} '{'{0}" +
+			"\t{0}" +
+			"}{0}" +
+			"";
+		String classContents = 
+			MessageFormat.format(
+					classContentsTemplate, 
+					newLine, 
+					testClassName, 
+					className);
+		return classContents;
+	}
+
+	/**
+	 * Generates a string representation of a compilation unit which will host
+	 * a JUnit 4 test class.
+	 * @param parentPackage The {@link IPackageFragment} in which the class to
+	 * be tested resides in.
+	 * @param newLine The character or character sequence to use as a line
+	 * separator in code.
+	 * @return A string representing a compilation unit in which a test fixture
+	 * class will be added.
+	 */
+	public static String generateCompilationUnitContents(IPackageFragment parentPackage, String newLine) {
+		// TODO: de-hardcode this compilation unit template for customization
+		// purposes, or at least initialize it from Eclipse's set of templates
+		String compilationUnitTemplate = 
+			"package {1};{0}" +
+			"{0}" +
+			"import static org.junit.Assert.*;{0}" +
+			"import org.junit.Test;{0}" +
+			"{0}" +
+			"";
+		String compilationUnitContents = 
+			MessageFormat.format(
+				compilationUnitTemplate, 
+				newLine, 
+				parentPackage.getElementName());
+		return compilationUnitContents;
 	}
 
 	/**
