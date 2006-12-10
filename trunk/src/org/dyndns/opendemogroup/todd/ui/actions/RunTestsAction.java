@@ -1,45 +1,24 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 
-public class RunTestsAction 
-	implements IObjectActionDelegate, IEditorActionDelegate {
+public class RunTestsAction extends LaunchActionBase {
 
 	/**
-	 * @see org.eclipse.ui.IEditorActionDelegate#setActiveEditor(org.eclipse.jface.action.IAction, org.eclipse.ui.IEditorPart)
+	 * @see org.dyndns.opendemogroup.todd.ui.actions.ActionBase#run(org.eclipse.jdt.core.IMethod)
 	 */
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		// TODO Auto-generated method stub
-	
+	@Override
+	protected void run ( IMethod targetMethod ) {
+		launch ( targetMethod, "run" );
 	}
 
 	/**
-	 * @see org.eclipse.ui.IObjectActionDelegate#setActivePart(org.eclipse.jface.action.IAction, org.eclipse.ui.IWorkbenchPart)
+	 * @see org.dyndns.opendemogroup.todd.ui.actions.ActionBase#run(org.eclipse.jdt.core.IType)
 	 */
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
-	 */
-	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO Auto-generated method stub
-	
-	}
-
-	/**
-	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
-	 */
-	public void run(IAction action) {
-		// TODO Auto-generated method stub
-
+	@Override
+	protected void run(IType targetType) {
+		launch ( targetType, "run" );
 	}
 
 }
