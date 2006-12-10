@@ -2,6 +2,7 @@ package org.dyndns.opendemogroup.todd.ui.actions;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
@@ -16,10 +17,10 @@ import org.eclipse.ui.IWorkbenchPart;
 public class GenerateTestsAction implements IObjectActionDelegate {
 
 	/**
-	 * Target {@link IMember} instances to operate on.  In our case, it will be
-	 * methods ({@link IMethod}) and classes ({@link IType}). 
+	 * Target instances to operate on.  In our case, it will most likely be
+	 * methods ({@link IMethod}) and classes ({@link IFile} and {@link IType}). 
 	 */
-	List<IMember> _Members = null;
+	List _Members = null;
 	
 	/**
 	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
@@ -32,10 +33,9 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 */
 	public void run(IAction action) {
 		if ( _Members != null ) {
-			for ( IMember each : _Members ) {
+			for ( Object each : _Members ) {
 				if (each instanceof IMethod) {
 					IMethod eachMethod = (IMethod) each;
-					// TODO: move this test to selectionChanged if possible
 					int flags = 0;
 					try {
 						flags = eachMethod.getFlags ( );
@@ -47,6 +47,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 						System.out.println ( jme );
 						return;
 					}
+					// TODO: move this check to selectionChanged if possible
 					if ( (flags & Flags.AccPrivate) != 0 ) {
 						// can't call private member!
 					}
@@ -55,12 +56,21 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 						// TODO: write a test for method only if test class subclasses us
 					}
 					else {
-						// TODO: write a test for method
+						generateTest ( eachMethod );
 					}
+				}
+				else if (each instanceof IFile) {
+					IFile eachFile = (IFile) each;
+					// TODO: determine the appropriate IType and simply forward
+					// to whatever the following code block will do
+					// TODO: to support the previous statement, some sort of
+					// adapter/factory type of abstraction could be used for
+					// added sexiness.
 				}
 				else if (each instanceof IType) {
 					// TODO: I can't seem to trigger on IType and instead I get
 					// an instance of File when I think I'm on a Class...
+					// This may be because I defined an extension on IFile?!?!?
 					IType eachClass = (IType) each;
 					// TODO: determine if eachClass is abstract and react accordingly
 					// TODO: write a testcase class
@@ -68,6 +78,22 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Given an {@link IMethod} instance, will attempt to generate a JUnit test
+	 * method for it in an appropriate associated test class.
+	 * @param method The method for which a test is to be generated.
+	 */
+	void generateTest(IMethod method) {
+		// TODO: determine eachMethod's class and package names
+		// TODO: search for class with same name in package (package + ".test")
+		// TODO: Is it a test class?  (Does it contain references to org.junit.*?)
+		// TODO: If so, open an editor for it, otherwise return right away.
+		// TODO: Search for a spot to insert the new test method:
+		// After last occurence of eachMethod.getName, or as the last method.
+		// Use IType.createMethod
+		// TODO: Consider scanning for special comments delineating test regions
 	}
 
 	/**
