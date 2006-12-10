@@ -8,12 +8,35 @@
             id="org.dyndns.opendemogroup.todd.contributions.type"
             nameFilter="*"
             objectClass="org.eclipse.jdt.core.IType">
+         <menu
+               label="%menu.todd"
+               path="additions"
+               id="todd.menu">
+            <separator
+                  name="group">
+            </separator>
+         </menu>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.RunTestsAction"
+               enablesFor="1"
+               id="org.dyndns.opendemogroup.todd.contributions.type.runTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
+               label="%action.runTests"
+               menubarPath="todd.menu/group" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                enablesFor="+"
                id="org.dyndns.opendemogroup.todd.contributions.type.generateTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.generateTests"
                label="%action.generateTests"
-               menubarPath="additions"/>
+               menubarPath="todd.menu/group"/>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.DebugTestsAction"
+               enablesFor="1"
+               id="org.dyndns.opendemogroup.todd.contributions.type.debugTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.debugTests"
+               label="%action.debugTests"
+               menubarPath="todd.menu/group" />
       </objectContribution>
       <!-- TODO: restore this extension once GenerateTestsAction#run(IFile)
       has been implemented.
@@ -22,12 +45,20 @@
             id="org.dyndns.opendemogroup.todd.contributions.file"
             nameFilter="*.java"
             objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               label="%menu.todd"
+               path="additions"
+               id="todd.menu">
+            <separator
+                  name="group">
+            </separator>
+         </menu>
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                enablesFor="+"
                id="org.dyndns.opendemogroup.todd.contributions.file.generateTestsAction"
                label="%action.generateTests"
-               menubarPath="additions"/>
+               menubarPath="todd.menu/group"/>
       </objectContribution>
       -->
       <objectContribution
@@ -35,21 +66,79 @@
             id="org.dyndns.opendemogroup.todd.contributions.method"
             nameFilter="*"
             objectClass="org.eclipse.jdt.core.IMethod">
+         <menu
+               label="%menu.todd"
+               path="additions"
+               id="todd.menu">
+            <separator
+                  name="group">
+            </separator>
+         </menu>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.RunTestsAction"
+               enablesFor="1"
+               id="org.dyndns.opendemogroup.todd.contributions.method.runTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
+               label="%action.runTests"
+               menubarPath="todd.menu/group" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                id="org.dyndns.opendemogroup.todd.contributions.method.generateTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.generateTests"
                label="%action.generateTests"
-               menubarPath="additions"/>
+               menubarPath="todd.menu/group"/>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.DebugTestsAction"
+               enablesFor="1"
+               id="org.dyndns.opendemogroup.todd.contributions.method.debugTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.debugTests"
+               label="%action.debugTests"
+               menubarPath="todd.menu/group" />
       </objectContribution>
       <viewerContribution
             id="org.dyndns.opendemogroup.todd.contributions.viewer"
             targetID="org.eclipse.jdt.ui.CompilationUnitEditor.EditorContext">
+         <menu
+               label="%menu.todd"
+               path="additions"
+               id="todd.menu">
+            <separator
+                  name="group">
+            </separator>
+         </menu>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.RunTestsAction"
+               id="org.dyndns.opendemogroup.todd.contributions.editor.runTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
+               label="%action.runTests"
+               menubarPath="todd.menu/group" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                id="org.dyndns.opendemogroup.todd.contributions.editor.generateTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.generateTests"
                label="%action.generateTests"
-               menubarPath="additions"/>
+               menubarPath="todd.menu/group"/>
+         <action
+               class="org.dyndns.opendemogroup.todd.ui.actions.DebugTestsAction"
+               id="org.dyndns.opendemogroup.todd.contributions.editor.debugTestsAction"
+               definitionId="org.dyndns.opendemogroup.todd.commands.debugTests"
+               label="%action.debugTests"
+               menubarPath="todd.menu/group" />
       </viewerContribution>
    </extension>
-
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.dyndns.opendemogroup.todd.commands.generateTests"
+            categoryId="org.eclipse.jdt.ui.category.source"
+            name="%command.generateTests" />
+      <command
+            id="org.dyndns.opendemogroup.todd.commands.runTests"
+            categoryId="org.eclipse.debug.ui.category.run"
+            name="%command.runTests" />
+      <command
+            id="org.dyndns.opendemogroup.todd.commands.debugTests"
+            categoryId="org.eclipse.debug.ui.category.run"
+            name="%command.debugTests" />
+   </extension>
 </plugin>
