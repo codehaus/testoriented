@@ -1,4 +1,4 @@
-package org.dyndns.opendemogroup.todd.ui.actions.test;
+package org.dyndns.opendemogroup.todd.ui.actions;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +25,7 @@ import org.junit.Test;
  * A class to test the class
  * {@link org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction}.
  */
-public class GenerateTestsAction extends org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction {
+public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	private class TestingMethod implements IMethod {
 
@@ -251,7 +251,7 @@ public class GenerateTestsAction extends org.dyndns.opendemogroup.todd.ui.action
 		
 	/**
 	 * A slightly lame test of 
-	 * {@link org.dyndns.opendemogroup.todd.GenerateTestsAction#generateTestMethodContents(IMethod,String)}
+	 * {@link GenerateTestsAction#generateTestMethodContents(IMethod,String)}
 	 * that exercises the typical use.
 	 */
 	@Test

@@ -29,19 +29,42 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 
-public class GenerateTestsAction implements IObjectActionDelegate {
+public class GenerateTestsAction 
+	implements IObjectActionDelegate {
 
 	/**
 	 * Target instances to operate on.  In our case, it will most likely be
 	 * methods ({@link IMethod}) and classes ({@link IFile} and {@link IType}). 
 	 */
 	List _Members = null;
-	
+
 	/**
 	 * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
 	 */
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 		// Do nothing (on purpose).
+	}
+
+	/**
+	 * Records the current selection for possible future processing using
+	 * {@link #run(IAction)}.
+	 * 
+	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
+	 */
+	public void selectionChanged(IAction action, ISelection selection) {
+		// TODO: Handle non-outline (JavaEditor) invocations
+		if (selection instanceof IStructuredSelection) {
+			IStructuredSelection ss = (IStructuredSelection) selection;
+			_Members = ss.toList();
+		}
+		else {
+			_Members = null;
+			// TODO: Remove this once we no longer need it
+			System.out.print ( "    -> Selection type not yet handled: " );
+			System.out.println ( selection );
+		}
+		
+		action.setEnabled( _Members != null );
 	}
 
 	/**
@@ -156,7 +179,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @return A string representing the character(s) to use between lines of
 	 * text.
 	 */
-	private String determineLineSeparator(IType targetClass) {
+	String determineLineSeparator(IType targetClass) {
 		IOpenable openableTestClass = targetClass.getOpenable();
 		String newLine = System.getProperty("line.separator");
 		try {
@@ -169,38 +192,6 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 		return newLine;
 	}
 
-	/**
-	 * Generates a string representation of a JUnit 4 test method that tests
-	 * <i>methodToTest</i>.
-	 * @param methodToTest The {@link IMethod} instance for which a test method
-	 * will be generated.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
-	 * @return A string representing the method to be added to the test fixture
-	 * that will exercise <i>methodToTest</i> after the user fills in a few
-	 * TODOs.
-	 */
-	public static String generateTestMethodContents(IMethod methodToTest, String newLine) {
-		String methodName = methodToTest.getElementName();
-		// TODO: de-hardcode this method template for customization purposes
-		// TODO: Also generate a call to the method under test with
-		// auto-generated default values for its parameters.
-		String testMethodTemplate =
-			"{1}" +
-			"/**{1}" +
-			" * Tests the <i>{0}</i> method with {1}" +
-			" * TODO: write about scenario{1}" +
-			" */{1}" +
-			"@Test public void {0}_TODO ( ) '{' {1}" +
-			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
-			"\tfail ( \"Test not yet written\" ); {1}" +
-			"}{1}" +
-			"";
-		String contents = 
-			MessageFormat.format( testMethodTemplate, methodName, newLine );
-		return contents;
-	}
-	
 	/**
 	 * Attempts to find or create an associated test class for the class in
 	 * which the specified <i>testedMethod</i> is found.
@@ -266,6 +257,47 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	}
 
 	/**
+	 * Uses the JDT {@link SearchEngine} to find a class matching the specified
+	 * <i>fullyQualifiedClassName</i> in the Eclipse Workspace.
+	 * @param fullyQualifiedClassName The name of the package and class to find. 
+	 * @return A list of {@link SearchMatch} instances or <code>null</code> if
+	 * there was a problem with the search. 
+	 * (and thus probably a bug in this code!)
+	 */
+	List<SearchMatch> findClass(String fullyQualifiedClassName) {
+		SearchPattern pattern = SearchPattern.createPattern (
+				fullyQualifiedClassName, 
+				IJavaSearchConstants.CLASS, 
+				IJavaSearchConstants.DECLARATIONS, 
+				SearchPattern.R_EXACT_MATCH );
+		if (null == pattern) {
+			// createPattern can return null if the pattern is ill-formed.
+			// TODO: Determine if returning null is a wise thing to do here
+			return null;
+		}
+		IJavaSearchScope scope = SearchEngine.createWorkspaceScope ( );
+		SearchEngine se = new SearchEngine ( );
+		SimpleSearchRequestor requestor = new SimpleSearchRequestor ();
+		try {
+			se.search(
+				pattern, 
+				new SearchParticipant[] { 
+						SearchEngine.getDefaultSearchParticipant()
+				}, 
+				scope, 
+				requestor, 
+				null);
+		} catch (CoreException e) {
+			// The search might fail because the classpath is incorrectly set
+			// TODO: report this to the user
+			return null;
+		}
+		
+		List<SearchMatch> results = requestor.getResults();
+		return results;
+	}
+
+	/**
 	 * Given an <code>IType</code> instance, will attempt to create another
 	 * <code>IType</code> that represents a JUnit 4 test class intended to
 	 * test <i>testedType</i>.
@@ -274,7 +306,7 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 	 * @return An <code>IType</code>, in its own {@link ICompilationUnit},
 	 * ready to have methods added to it to test <i>testedType</i>.
 	 */
-	private	IType createAssociatedTestClass ( IType testedType ) {
+	IType createAssociatedTestClass ( IType testedType ) {
 		String className = testedType.getElementName();
 		IPackageFragment parentPackage = testedType.getPackageFragment();
 		String newLine = determineLineSeparator(testedType);
@@ -316,6 +348,38 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 			return null;
 		}
 		return associatedClass;
+	}
+
+	/**
+	 * Generates a string representation of a JUnit 4 test method that tests
+	 * <i>methodToTest</i>.
+	 * @param methodToTest The {@link IMethod} instance for which a test method
+	 * will be generated.
+	 * @param newLine The character or character sequence to use as a line
+	 * separator in code.
+	 * @return A string representing the method to be added to the test fixture
+	 * that will exercise <i>methodToTest</i> after the user fills in a few
+	 * TODOs.
+	 */
+	public static String generateTestMethodContents(IMethod methodToTest, String newLine) {
+		String methodName = methodToTest.getElementName();
+		// TODO: de-hardcode this method template for customization purposes
+		// TODO: Also generate a call to the method under test with
+		// auto-generated default values for its parameters.
+		String testMethodTemplate =
+			"{1}" +
+			"/**{1}" +
+			" * Tests the <i>{0}</i> method with {1}" +
+			" * TODO: write about scenario{1}" +
+			" */{1}" +
+			"@Test public void {0}_TODO ( ) '{' {1}" +
+			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
+			"\tfail ( \"Test not yet written\" ); {1}" +
+			"}{1}" +
+			"";
+		String contents = 
+			MessageFormat.format( testMethodTemplate, methodName, newLine );
+		return contents;
 	}
 
 	/**
@@ -378,69 +442,6 @@ public class GenerateTestsAction implements IObjectActionDelegate {
 				newLine, 
 				parentPackage.getElementName());
 		return compilationUnitContents;
-	}
-
-	/**
-	 * Uses the JDT {@link SearchEngine} to find a class matching the specified
-	 * <i>fullyQualifiedClassName</i> in the Eclipse Workspace.
-	 * @param fullyQualifiedClassName The name of the package and class to find. 
-	 * @return A list of {@link SearchMatch} instances or <code>null</code> if
-	 * there was a problem with the search. 
-	 * (and thus probably a bug in this code!)
-	 */
-	List<SearchMatch> findClass(String fullyQualifiedClassName) {
-		SearchPattern pattern = SearchPattern.createPattern (
-				fullyQualifiedClassName, 
-				IJavaSearchConstants.CLASS, 
-				IJavaSearchConstants.DECLARATIONS, 
-				SearchPattern.R_EXACT_MATCH );
-		if (null == pattern) {
-			// createPattern can return null if the pattern is ill-formed.
-			// TODO: Determine if returning null is a wise thing to do here
-			return null;
-		}
-		IJavaSearchScope scope = SearchEngine.createWorkspaceScope ( );
-		SearchEngine se = new SearchEngine ( );
-		SimpleSearchRequestor requestor = new SimpleSearchRequestor ();
-		try {
-			se.search(
-				pattern, 
-				new SearchParticipant[] { 
-						SearchEngine.getDefaultSearchParticipant()
-				}, 
-				scope, 
-				requestor, 
-				null);
-		} catch (CoreException e) {
-			// The search might fail because the classpath is incorrectly set
-			// TODO: report this to the user
-			return null;
-		}
-		
-		List<SearchMatch> results = requestor.getResults();
-		return results;
-	}
-
-	/**
-	 * Records the current selection for possible future processing using
-	 * {@link #run(IAction)}.
-	 * 
-	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
-	 */
-	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO: Handle non-outline (JavaEditor) invocations
-		if (selection instanceof IStructuredSelection) {
-			IStructuredSelection ss = (IStructuredSelection) selection;
-			_Members = ss.toList();
-		}
-		else {
-			_Members = null;
-			// TODO: Remove this once we no longer need it
-			System.out.print ( "    -> Selection type not yet handled: " );
-			System.out.println ( selection );
-		}
-		
-		action.setEnabled( _Members != null );
 	}
 
 }
