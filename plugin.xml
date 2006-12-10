@@ -15,6 +15,8 @@
                label="%action.generateTests"
                menubarPath="additions"/>
       </objectContribution>
+      <!-- TODO: restore this extension once GenerateTestsAction#run(IFile)
+      has been implemented.
       <objectContribution
             adaptable="true"
             id="org.dyndns.opendemogroup.todd.contributions.file"
@@ -27,6 +29,7 @@
                label="%action.generateTests"
                menubarPath="additions"/>
       </objectContribution>
+      -->
       <objectContribution
             adaptable="true"
             id="org.dyndns.opendemogroup.todd.contributions.method"

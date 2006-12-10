@@ -111,51 +111,81 @@ public class GenerateTestsAction
 		if ( _Members != null ) {
 			for ( Object each : _Members ) {
 				if (each instanceof IMethod) {
-					IMethod eachMethod = (IMethod) each;
-					int flags = 0;
-					try {
-						flags = eachMethod.getFlags ( );
-					}
-					catch ( JavaModelException jme ) {
-						// TODO: Find out when this is thrown and see if there's
-						// a better reaction than simply stopping everything.
-						return;
-					}
-					// TODO: move this check to selectionChanged if possible
-					if ( (flags & Flags.AccPrivate) != 0 ) {
-						// can't call private member!
-					}
-					else if ( (flags & Flags.AccProtected) != 0) {
-						// TODO: Also consider an abstract method
-						// TODO: write a test for method only if test class subclasses us
-					}
-					else {
-						generateTest ( eachMethod );
-					}
+					run((IMethod) each);
 				}
 				else if (each instanceof IFile) {
 					IFile eachFile = (IFile) each;
-					// TODO: determine the appropriate IType and simply forward
-					// to whatever the following code block will do
-					// TODO: to support the previous statement, some sort of
-					// adapter/factory type of abstraction could be used for
-					// added sexiness.
+					// TODO: determine the appropriate IType and simply call
+					// #run(IType)
 				}
 				else if (each instanceof IType) {
 					// TODO: I can't seem to trigger on IType and instead I get
 					// an instance of File when I think I'm on a Class...
 					// This may be because I defined an extension on IFile?!?!?
-					IType eachClass = (IType) each;
-					// TODO: The following TODOs might be better handled
-					// transparently by generateTest if we invoke it on all of
-					// eachClass' methods, in a loop.
-					// TODO: determine if eachClass is abstract and react accordingly
-					// TODO: write a testcase class
-					// TODO: Consider invoking the current "New JUnit Test Case" wizard
+					run((IType) each);
 				}
 			}
 			// TODO: Might need to have this happen in a "finally" block
 			_Members = null;
+		}
+	}
+
+	/**
+	 * Executes the action, if possible, on the provided {@link IType} instance.
+	 * @param potentialTypeToTest An {@link IType}, which may have originated
+	 * from an {@link IStructuredSelection} or from detecting that the cursor
+	 * was closest to a class declaration in the active editor.
+	 */
+	protected void run(IType potentialTypeToTest) {
+		// TODO: The following TODOs might be better handled
+		// transparently by generateTest if we invoke it on all of
+		// eachClass' methods, in a loop.
+		// TODO: determine if eachClass is abstract and react accordingly
+		// TODO: write a testcase class
+		// TODO: Consider invoking the current "New JUnit Test Case" wizard
+		IMethod[] methods = null;
+		try {
+			methods = potentialTypeToTest.getMethods();
+		} catch (JavaModelException jme) {
+			// jme thrown if element does not exist or
+			// if there's a horrible error during access
+			return;
+		}
+		for ( IMethod each : methods ) {
+			run ( each );
+		}
+	}
+
+	/**
+	 * Executes the action, if possible, on the provided {@link IMethod}
+	 * instance.
+	 * @param potentialMethodToTest An {@link IMethod}, which may have
+	 * originated from an {@link IStructuredSelection}, from enumerating an
+	 * {@link IType}'s methods or from detecting that the cursor was closest to
+	 * a method declaration in the active editor.
+	 */
+	protected void run(IMethod potentialMethodToTest) {
+		// TODO: Consider the scenario where someone tries to have a test
+		// written for a constructor/destructor or other hard-to-call method
+		int flags = 0;
+		try {
+			flags = potentialMethodToTest.getFlags ( );
+		}
+		catch ( JavaModelException jme ) {
+			// jme thrown if element does not exist or
+			// if there's a horrible error during access
+			return;
+		}
+		// TODO: move this check to selectionChanged if possible
+		if ( (flags & Flags.AccPrivate) != 0 ) {
+			// can't call private member!
+		}
+		else if ( (flags & Flags.AccProtected) != 0) {
+			// TODO: Also consider an abstract method
+			// TODO: write a test for method only if test class subclasses us
+		}
+		else {
+			generateTest ( potentialMethodToTest );
 		}
 	}
 
