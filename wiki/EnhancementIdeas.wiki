@@ -3,9 +3,19 @@
 
 = User Interface =
 
-It would be nice to have the editor's context menu be more similar to that illustrated in the [http://www.testdriven.net/images/content_vs1.png http://www.testdriven.net/images/content_vs1-small.png] screenshot of TestDriven.NET ( http://www.testdriven.net/ ), as TODD's functionality is currently:
+It would be nice to have the editor's context menu be more similar to that illustrated in the following  screenshot of [http://www.testdriven.net/ TestDriven.NET]:
+
+[http://www.testdriven.net/images/content_vs1.png http://www.testdriven.net/images/content_vs1-small.png]
+
+...as TODD's functionality is currently:
  # a sub-menu
  # ...that's nowhere near the top
  # ...and is not attainable through keyboard shortcuts
 ...as illustrated in the following screenshot:
-*TODO*: Add said screenshot
+
+http://testoriented.googlecode.com/svn/wiki/TODDsubmenu.png
+
+
+
+
+
