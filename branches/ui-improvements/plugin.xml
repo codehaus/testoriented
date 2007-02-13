@@ -22,7 +22,7 @@
                id="org.dyndns.opendemogroup.todd.contributions.type.runTestsAction"
                definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
                label="%action.runTests"
-               menubarPath="todd.menu/group" />
+               menubarPath="additions" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                enablesFor="+"
@@ -80,7 +80,7 @@
                id="org.dyndns.opendemogroup.todd.contributions.method.runTestsAction"
                definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
                label="%action.runTests"
-               menubarPath="todd.menu/group" />
+               menubarPath="additions" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                id="org.dyndns.opendemogroup.todd.contributions.method.generateTestsAction"
@@ -111,7 +111,7 @@
                id="org.dyndns.opendemogroup.todd.contributions.editor.runTestsAction"
                definitionId="org.dyndns.opendemogroup.todd.commands.runTests"
                label="%action.runTests"
-               menubarPath="todd.menu/group" />
+               menubarPath="additions" />
          <action
                class="org.dyndns.opendemogroup.todd.ui.actions.GenerateTestsAction"
                id="org.dyndns.opendemogroup.todd.contributions.editor.generateTestsAction"
