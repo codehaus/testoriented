@@ -1,0 +1,6 @@
+#summary Explains how the source control is connected to the issue tracker
+#labels Featured,Phase-Implementation
+
+= Introduction =
+
+In order to better trace commits in source control back to [http://code.google.com/p/testoriented/issues/list issues], some properties have been added to folders.  Together, they implement the [http://www.fogcreek.com/FogBugz/docs/40/Articles/SourceControl/TortoiseSVN.html Subversion integration with an issue tracker] as described in the FogBugz documentation.
