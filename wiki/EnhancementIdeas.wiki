@@ -8,12 +8,13 @@ It would be nice to have the editor's context menu be more similar to that illus
 [http://www.testdriven.net/images/content_vs1.png http://www.testdriven.net/images/content_vs1-small.png]
 
 ...as TODD's functionality is currently:
- # a sub-menu
+ # a sub-menu (partially fixed by [http://code.google.com/p/testoriented/issues/detail?id=1 issue 1])
  # ...that's nowhere near the top
- # ...and is not attainable through keyboard shortcuts
+ # ...and is not attainable through keyboard shortcuts (partially fixed by [http://code.google.com/p/testoriented/issues/detail?id=1 issue 1])
 ...as illustrated in the following screenshot:
 
 http://testoriented.googlecode.com/svn/wiki/TODDsubmenu.png
+
 
 
 
