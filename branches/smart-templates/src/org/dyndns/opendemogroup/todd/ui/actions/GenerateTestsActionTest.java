@@ -251,15 +251,15 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		
 	/**
 	 * A slightly lame test of 
-	 * {@link GenerateTestsAction#generateTestMethodContents(IMethod,String)}
+	 * {@link GenerateTestsAction#generateTestMethod(IMethod,String)}
 	 * that exercises the typical use.
 	 */
 	@Test
-	public void generateTestMethodContents_Typical ( ) {
+	public void generateTestMethod_Typical ( ) {
 		TestingMethod t = new TestingMethod ();
 		t.setElementName("Unformat");
 		String newLine = System.getProperty("line.separator");
-		String actual = generateTestMethodContents(t, newLine);
+		String actual = generateTestMethod(t, newLine);
 		String testMethodTemplate =
 			"{0}" +
 			"/**{0}" +

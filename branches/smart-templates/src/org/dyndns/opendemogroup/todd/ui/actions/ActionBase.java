@@ -3,14 +3,12 @@ package org.dyndns.opendemogroup.todd.ui.actions;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dyndns.opendemogroup.todd.SimpleStructuredSelection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.junit.launcher.JUnitLaunchShortcut;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.ITextSelection;

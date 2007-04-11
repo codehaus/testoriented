@@ -105,7 +105,7 @@ public class GenerateTestsAction extends ActionBase {
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
 		String newLine = determineLineSeparator(testClass);
-		String contents = generateTestMethodContents ( method, newLine );
+		String contents = generateTestMethod ( method, newLine );
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
@@ -336,7 +336,7 @@ public class GenerateTestsAction extends ActionBase {
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public static String generateTestMethodContents(IMethod methodToTest, String newLine) {
+	public static String generateTestMethod(IMethod methodToTest, String newLine) {
 		String methodName = methodToTest.getElementName();
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
