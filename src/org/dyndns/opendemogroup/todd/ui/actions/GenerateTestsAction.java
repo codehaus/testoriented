@@ -73,10 +73,10 @@ public class GenerateTestsAction extends ActionBase {
 			return;
 		}
 		// TODO: move this check to selectionChanged if possible
-		if ( (flags & Flags.AccPrivate) != 0 ) {
+		if ( Flags.isPrivate(flags) ) {
 			// can't call private member!
 		}
-		else if ( (flags & Flags.AccProtected) != 0) {
+		else if ( Flags.isProtected(flags) ) {
 			// TODO: Also consider an abstract method
 			// TODO: write a test for method only if test class subclasses us
 		}
@@ -105,7 +105,7 @@ public class GenerateTestsAction extends ActionBase {
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
 		String newLine = determineLineSeparator(testClass);
-		String contents = generateTestMethod ( method, newLine );
+		String contents = generateTestMethod ( method, newLine, testClass );
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
@@ -332,11 +332,12 @@ public class GenerateTestsAction extends ActionBase {
 	 * will be generated.
 	 * @param newLine The character or character sequence to use as a line
 	 * separator in code.
+	 * @param testClass The class in which this method is located.
 	 * @return A string representing the method to be added to the test fixture
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public static String generateTestMethod(IMethod methodToTest, String newLine) {
+	public static String generateTestMethod(IMethod methodToTest, String newLine, IType testClass) {
 		String methodName = methodToTest.getElementName();
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
@@ -348,12 +349,16 @@ public class GenerateTestsAction extends ActionBase {
 			" * TODO: write about scenario{1}" +
 			" */{1}" +
 			"@Test public void {0}_TODO ( ) '{' {1}" +
-			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
-			"\tfail ( \"Test not yet written\" ); {1}" +
+			"{2}" +
 			"}{1}" +
 			"";
+		String bodyTemplate = 
+			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
+			"\tfail ( \"Test not yet written\" ); {1}";
+		String body = 
+			MessageFormat.format( bodyTemplate, methodName, newLine );
 		String contents = 
-			MessageFormat.format( testMethodTemplate, methodName, newLine );
+			MessageFormat.format( testMethodTemplate, methodName, newLine, body );
 		return contents;
 	}
 
