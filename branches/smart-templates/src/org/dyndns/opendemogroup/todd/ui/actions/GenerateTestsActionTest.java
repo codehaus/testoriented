@@ -23,7 +23,9 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	public void generateTestMethod_Typical ( ) {
 		TestingMethod tm = new TestingMethod ();
 		tm.setElementName("Unformat");
-		String actual = generateTestMethod(tm, NEWLINE, null);
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		String actual = generateTestMethod(tm, NEWLINE, tc);
 		String testMethodTemplate =
 			"{0}" +
 			"/**{0}" +
@@ -31,7 +33,8 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			" * TODO: write about scenario{0}" +
 			" */{0}" +
 			"@Test public void Unformat_TODO ( ) '{' {0}" +
-			"\t// TODO: invoke Unformat and assert properties of its effects/output{0}" +
+			"\t// TODO: Create an instance of the Unformatter class, using the shortest constructor available {0}" +
+			"\t// TODO: invoke instance.Unformat and assert properties of its effects/output{0}" +
 			"\tfail ( \"Test not yet written\" ); {0}" +
 			"}{0}" +
 			"";

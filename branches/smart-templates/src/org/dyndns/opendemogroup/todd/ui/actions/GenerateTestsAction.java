@@ -85,7 +85,6 @@ public class GenerateTestsAction extends ActionBase {
 		}
 	}
 
-	
 	/**
 	 * Given an {@link IMethod} instance, will attempt to generate a JUnit test
 	 * method for it in an appropriate associated test class.
@@ -338,7 +337,6 @@ public class GenerateTestsAction extends ActionBase {
 	 * TODOs.
 	 */
 	public static String generateTestMethod(IMethod methodToTest, String newLine, IType testClass) {
-		String methodName = methodToTest.getElementName();
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
 		// auto-generated default values for its parameters.
@@ -352,16 +350,59 @@ public class GenerateTestsAction extends ActionBase {
 			"{2}" +
 			"}{1}" +
 			"";
-		String bodyTemplate = 
-			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
-			"\tfail ( \"Test not yet written\" ); {1}";
-		String body = 
-			MessageFormat.format( bodyTemplate, methodName, newLine );
+		String body = generateTestMethodBody(methodToTest, newLine, testClass);
 		String contents = 
-			MessageFormat.format( testMethodTemplate, methodName, newLine, body );
+			MessageFormat.format( testMethodTemplate, methodToTest.getElementName(), newLine, body );
 		return contents;
 	}
 
+	/**
+	 * Convenience method that takes care of setting up the test method stub's
+	 * body.
+	 * @param methodToTest
+	 * @param newLine
+	 * @param testClass
+	 * @return
+	 */
+	static String generateTestMethodBody(IMethod methodToTest, String newLine, IType testClass) {
+		String className = testClass.getElementName();
+		String methodName = methodToTest.getElementName();
+		int flags = 0;
+		try {
+			flags = methodToTest.getFlags();
+		} catch (JavaModelException jme) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource, so
+			// let's ignore it for now and pretend it never happened.
+		}
+		// TODO: create an instance variable name based on the class name
+		String instanceOrClass = 
+			Flags.isStatic(flags) ? className : "instance";
+
+		StringBuilder body = new StringBuilder ( );
+		if ( !Flags.isStatic(flags) ) {
+			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
+		}
+		String bodyTemplate = 
+			"\t// TODO: invoke {2}.{0} and assert properties of its effects/output{1}" +
+			"\tfail ( \"Test not yet written\" ); {1}" +
+			"";
+		appendFormat(body, bodyTemplate, methodName, newLine, instanceOrClass);
+		return body.toString();
+	}
+
+	/**
+	 * Convenience method to emulate a method of the same name in .NET's
+	 * StringBuilder class.
+	 * @param target
+	 * @param pattern
+	 * @param arguments
+	 */
+	private static void appendFormat ( StringBuilder target, String pattern, Object... arguments ) {
+		String result = MessageFormat.format(pattern, arguments);
+		target.append(result);
+	}
+	
 	/**
 	 * Generates a string representation of a JUnit 4 test class, which will
 	 * host tests for the class <i>className</i> and be called
