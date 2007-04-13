@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.text.MessageFormat;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -12,7 +13,10 @@ import org.junit.Test;
  */
 public class GenerateTestsActionTest extends GenerateTestsAction {
 
-	private static final String NEWLINE = System.getProperty("line.separator");
+	@Before
+	public void initializeNewLine ( ) {
+		newLine = System.getProperty("line.separator");
+	}
 
 	/**
 	 * A slightly lame test of 
@@ -25,7 +29,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		tm.setElementName("Unformat");
 		TestingClass tc = new TestingClass ( );
 		tc.setElementName("Unformatter");
-		String actual = generateTestMethod(tm, NEWLINE, tc);
+		String actual = generateTestMethod(tm, tc);
 		String testMethodTemplate =
 			"{0}" +
 			"/**{0}" +
@@ -39,7 +43,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			"}{0}" +
 			"";
 		String expected = 
-			MessageFormat.format( testMethodTemplate, NEWLINE );
+			MessageFormat.format( testMethodTemplate, newLine );
 		assertEquals(expected, actual);
 	}
 
