@@ -26,6 +26,8 @@ import org.eclipse.ui.PartInitException;
 
 public class GenerateTestsAction extends ActionBase {
 
+	protected String newLine;
+
 	/**
 	 * Executes the action, if possible, on the provided {@link IType} instance.
 	 * @param potentialTypeToTest An {@link IType}, which may have originated
@@ -103,8 +105,8 @@ public class GenerateTestsAction extends ActionBase {
 		// TODO: Search for a spot to insert the new test method:
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
-		String newLine = determineLineSeparator(testClass);
-		String contents = generateTestMethod ( method, newLine, testClass );
+		determineLineSeparator(testClass);
+		String contents = generateTestMethod ( method, testClass );
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
@@ -144,15 +146,15 @@ public class GenerateTestsAction extends ActionBase {
 	/**
 	 * Attempts to determine the line separator character(s) for the supplied
 	 * <i>targetClass</i> with a default of whatever the platform's
-	 * <i>line.separator</i> property is.
+	 * <i>line.separator</i> property is.  The result is stored in the protected
+	 * field "newLine" for use by other methods in this class.
 	 * @param targetClass The {@link IType} instance for which the line
 	 * separator is to be determined. 
-	 * @return A string representing the character(s) to use between lines of
 	 * text.
 	 */
-	String determineLineSeparator(IType targetClass) {
+	void determineLineSeparator(IType targetClass) {
 		IOpenable openableTestClass = targetClass.getOpenable();
-		String newLine = System.getProperty("line.separator");
+		newLine = System.getProperty("line.separator");
 		try {
 			newLine = openableTestClass.findRecommendedLineSeparator();
 		} catch (JavaModelException jme) {
@@ -160,7 +162,6 @@ public class GenerateTestsAction extends ActionBase {
 			// and thus we ignore since we already have a reasonably sensible
 			// default value for newLine
 		}
-		return newLine;
 	}
 
 	/**
@@ -283,9 +284,9 @@ public class GenerateTestsAction extends ActionBase {
 		// JavaUI.createTypeDialog
 		String className = testedType.getElementName();
 		IPackageFragment parentPackage = testedType.getPackageFragment();
-		String newLine = determineLineSeparator(testedType);
+		determineLineSeparator(testedType);
 		String compilationUnitContents = 
-			generateCompilationUnitContents(parentPackage, newLine);
+			generateCompilationUnitContents(parentPackage);
 		// TODO: Parameterize the convention somehow (Strategy pattern?)
 		String testClassName = className + "Test";
 		ICompilationUnit associatedUnit = null;
@@ -303,7 +304,7 @@ public class GenerateTestsAction extends ActionBase {
 		}
 		IType associatedClass = null;
 		String classContents = 
-			generateTestClassContents(className, testClassName, newLine);
+			generateTestClassContents(className, testClassName);
 		try {
 			associatedClass = 
 				associatedUnit.createType(
@@ -329,14 +330,12 @@ public class GenerateTestsAction extends ActionBase {
 	 * <i>methodToTest</i>.
 	 * @param methodToTest The {@link IMethod} instance for which a test method
 	 * will be generated.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
 	 * @param testClass The class in which this method is located.
 	 * @return A string representing the method to be added to the test fixture
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public static String generateTestMethod(IMethod methodToTest, String newLine, IType testClass) {
+	public String generateTestMethod(IMethod methodToTest, IType testClass) {
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
 		// auto-generated default values for its parameters.
@@ -350,7 +349,7 @@ public class GenerateTestsAction extends ActionBase {
 			"{2}" +
 			"}{1}" +
 			"";
-		String body = generateTestMethodBody(methodToTest, newLine, testClass);
+		String body = generateTestMethodBody(methodToTest, testClass);
 		String contents = 
 			MessageFormat.format( testMethodTemplate, methodToTest.getElementName(), newLine, body );
 		return contents;
@@ -360,11 +359,10 @@ public class GenerateTestsAction extends ActionBase {
 	 * Convenience method that takes care of setting up the test method stub's
 	 * body.
 	 * @param methodToTest
-	 * @param newLine
 	 * @param testClass
 	 * @return
 	 */
-	static String generateTestMethodBody(IMethod methodToTest, String newLine, IType testClass) {
+	String generateTestMethodBody(IMethod methodToTest, IType testClass) {
 		String className = testClass.getElementName();
 		String methodName = methodToTest.getElementName();
 		int flags = 0;
@@ -441,12 +439,10 @@ public class GenerateTestsAction extends ActionBase {
 	 * @param className The name of the class to test.
 	 * @param testClassName The name of the test class, which will contain tests
 	 * for the class called <i>className</i>.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
 	 * @return A string representing a class declaration for JUnit testing
 	 * purposes.
 	 */
-	public static String generateTestClassContents(String className, String testClassName, String newLine) {
+	public String generateTestClassContents(String className, String testClassName) {
 		// TODO: In some cases, it may be desirable to have testClass derive
 		// from class, so that protected methods can be exercised.
 		// TODO: de-hardcode this class declaration template for customization
@@ -473,12 +469,10 @@ public class GenerateTestsAction extends ActionBase {
 	 * a JUnit 4 test class.
 	 * @param parentPackage The {@link IPackageFragment} in which the class to
 	 * be tested resides in.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
 	 * @return A string representing a compilation unit in which a test fixture
 	 * class will be added.
 	 */
-	public static String generateCompilationUnitContents(IPackageFragment parentPackage, String newLine) {
+	public String generateCompilationUnitContents(IPackageFragment parentPackage) {
 		// TODO: de-hardcode this compilation unit template for customization
 		// purposes, or at least initialize it from Eclipse's set of templates
 		String compilationUnitTemplate = 
