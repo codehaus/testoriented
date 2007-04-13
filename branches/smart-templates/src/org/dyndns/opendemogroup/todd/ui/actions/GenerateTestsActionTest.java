@@ -34,13 +34,33 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			" */{0}" +
 			"@Test public void Unformat_TODO ( ) '{' {0}" +
 			"\t// TODO: Create an instance of the Unformatter class, using the shortest constructor available {0}" +
-			"\t// TODO: invoke instance.Unformat and assert properties of its effects/output{0}" +
+			"\t// TODO: invoke unformatter.Unformat and assert properties of its effects/output{0}" +
 			"\tfail ( \"Test not yet written\" ); {0}" +
 			"}{0}" +
 			"";
 		String expected = 
 			MessageFormat.format( testMethodTemplate, NEWLINE );
 		assertEquals(expected, actual);
+	}
+
+	/**
+	 * Tests the <i>determineInstanceVariableName</i> method with 
+	 * a typical use of a class name that starts with an uppercase letter.
+	 */
+	@Test public void determineInstanceVariableName_UpperCaseFirstLetter ( ) { 
+		String actual = 
+			GenerateTestsAction.determineInstanceVariableName("StringBuilder");
+		assertEquals("stringBuilder", actual);
+	}
+
+	/**
+	 * Tests the <i>determineInstanceVariableName</i> method with 
+	 * a typical use of a class name that starts with a lowercase letter.
+	 */
+	@Test public void determineInstanceVariableName_lowerCaseFirstLetter ( ) { 
+		String actual = 
+			GenerateTestsAction.determineInstanceVariableName("stringBuilder");
+		assertEquals("instance", actual);
 	}
 
 }

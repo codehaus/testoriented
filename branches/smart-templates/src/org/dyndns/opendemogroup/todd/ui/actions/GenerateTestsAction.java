@@ -307,9 +307,9 @@ public class GenerateTestsAction extends ActionBase {
 		try {
 			associatedClass = 
 				associatedUnit.createType(
-						classContents, 
-						null, 
-						true, 
+						classContents,
+						null,
+						true,
 						null);
 		} catch (JavaModelException jme) {
 			// jme thrown if sibling does not exist or is invalid (which is
@@ -377,10 +377,18 @@ public class GenerateTestsAction extends ActionBase {
 		}
 		// TODO: create an instance variable name based on the class name
 		String instanceOrClass = 
-			Flags.isStatic(flags) ? className : "instance";
+			Flags.isStatic(flags) 
+			? className 
+			: determineInstanceVariableName(className);
 
 		StringBuilder body = new StringBuilder ( );
 		if ( !Flags.isStatic(flags) ) {
+			// TODO: What happens if the class is abstract?  How about we
+			// assume (detect) that there will be some subclasses of this test
+			// class for all implementations (and even create one if none exist)
+			// and delegate the initialization to subclasses by making ourselves
+			// abstract as well? (we'd have to be careful not to fight the user
+			// while doing this)
 			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
 		}
 		String bodyTemplate = 
@@ -389,6 +397,29 @@ public class GenerateTestsAction extends ActionBase {
 			"";
 		appendFormat(body, bodyTemplate, methodName, newLine, instanceOrClass);
 		return body.toString();
+	}
+	
+	static String determineInstanceVariableName ( String className ) {
+		// TODO: Investigate the use of the 
+		// org.eclipse.jdt.internal.core.InternalNamingConventions
+		// class' suggestLocalVariableNames method, since it has support for
+		// exclusions (to prevent collisions), project pre- and suf- fixes, etc.
+
+		String result = "instance"; // default value
+
+		char firstCharacter = className.charAt(0);
+		// if className starts with an uppercase letter...
+		if ( Character.isUpperCase( firstCharacter ) ) {
+			// lowercase it and append it to the rest
+			result = Character.toLowerCase(firstCharacter) 
+					+ className.substring(1);
+			// TODO: if that name is already taken and there's another
+			// uppercase letter in the className, try to form a variable name
+			// using such successive "words" until all remaining splits have
+			// been exhausted.
+		}
+
+		return result;
 	}
 
 	/**
