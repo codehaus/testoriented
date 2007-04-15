@@ -1,6 +1,7 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
 import java.text.MessageFormat;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
@@ -27,7 +28,31 @@ import org.eclipse.ui.PartInitException;
 public class GenerateTestsAction extends ActionBase {
 
 	protected String newLine;
+	/**
+	 * Represents a mapping of single-character primitive type name
+	 * representations (as the TypeSignature) and sensible values for defaults
+	 * when initializing them. 
+	 */
+	private static Hashtable<Character, String> simpleTypeMapping = null;
 
+	public GenerateTestsAction ( ) {
+		super ( );
+		synchronized (GenerateTestsAction.class) {
+			if (null == simpleTypeMapping) {
+				simpleTypeMapping = new Hashtable<Character, String>();
+				simpleTypeMapping.put('B', "0"); // byte
+				simpleTypeMapping.put('C', "'x'"); // char
+				simpleTypeMapping.put('D', "0.0"); // double
+				simpleTypeMapping.put('F', "0.0f"); // float
+				simpleTypeMapping.put('I', "0"); // int
+				simpleTypeMapping.put('J', "0L"); // long
+				simpleTypeMapping.put('S', "0"); // short
+				simpleTypeMapping.put('V', "null"); // void
+				simpleTypeMapping.put('Z', "false"); // boolean
+			}
+		}		
+	}
+	
 	/**
 	 * Executes the action, if possible, on the provided {@link IType} instance.
 	 * @param potentialTypeToTest An {@link IType}, which may have originated
@@ -153,6 +178,8 @@ public class GenerateTestsAction extends ActionBase {
 	 * text.
 	 */
 	void determineLineSeparator(IType targetClass) {
+		// TODO: Investigate using Util.getLineSeparator instead of
+		// (or in addition to) this code...
 		IOpenable openableTestClass = targetClass.getOpenable();
 		newLine = System.getProperty("line.separator");
 		try {
@@ -387,6 +414,12 @@ public class GenerateTestsAction extends ActionBase {
 			// and delegate the initialization to subclasses by making ourselves
 			// abstract as well? (we'd have to be careful not to fight the user
 			// while doing this)
+			// TODO: What if the shortest constructor is recursive? For example:
+			// Node ( Node parent )
+			// ...although parent could probably be null in this case...
+			// TODO: What if the [shortest] constructor is private?  That might
+			// mean we have a singleton with an "Instance" or other factory
+			// method that creates instances for us.
 			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
 		}
 		String bodyTemplate = 
@@ -397,6 +430,42 @@ public class GenerateTestsAction extends ActionBase {
 		return body.toString();
 	}
 	
+	/**
+	 * When calling a method or a constructor, arguments must be provided values
+	 * that match their type.  This method decodes the provided
+	 * <i>typeSignature</i> and returns the string representation of a sensible
+	 * default value with which to initialize a variable/parameter of that type.
+	 * @param typeSignature
+	 * @return
+	 */
+	String determineInitializationForType ( String typeSignature ) {
+		char firstCharacter = typeSignature.charAt(0);
+		String result = "null";
+		switch ( firstCharacter ) {
+		case 'T':	// type variable
+			// TODO: implement this possibility
+			break;
+		case '[':	// array X[]
+			// TODO: implement this possibility
+			break;
+		case '!':	// capture-of ?
+			// TODO: implement this possibility
+			break;
+		case 'L':	// resolved named type (in compiled code)
+			// TODO: implement this possibility
+			break;
+		case 'Q':	// unresolved named type (in source code)
+			// TODO: implement this possibility
+			break;
+		default:	// all others - they are simple types
+			if ( simpleTypeMapping.containsKey(firstCharacter) ) {
+				result = simpleTypeMapping.get(firstCharacter);
+			}
+			break;
+		}
+		return result;
+	}
+
 	static String determineInstanceVariableName ( String className ) {
 		// TODO: Investigate the use of the 
 		// org.eclipse.jdt.internal.core.InternalNamingConventions
