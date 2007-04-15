@@ -37,6 +37,12 @@ public class GenerateTestsAction extends ActionBase {
 	private static Hashtable<Character, String> simpleTypeDefaultValues = null;
 	
 	/**
+	 * Represents a mapping of type names and sensible values for defaults
+	 * when initializing them. 
+	 */
+	private static Hashtable<String, String> complexTypeDefaultValues = null;
+
+	/**
 	 * Represents a mapping of single-character primitive type name
 	 * representations and their usual string representations in source code. 
 	 */
@@ -45,6 +51,7 @@ public class GenerateTestsAction extends ActionBase {
 	public GenerateTestsAction ( ) {
 		super ( );
 		synchronized (GenerateTestsAction.class) {
+			// TODO: Eventually make these defaults configurable
 			if (null == simpleTypeDefaultValues) {
 				simpleTypeDefaultValues = new Hashtable<Character, String>();
 				simpleTypeDefaultValues.put(Signature.C_BYTE, "0");
@@ -56,6 +63,14 @@ public class GenerateTestsAction extends ActionBase {
 				simpleTypeDefaultValues.put(Signature.C_SHORT, "0");
 				simpleTypeDefaultValues.put(Signature.C_VOID, "null");
 				simpleTypeDefaultValues.put(Signature.C_BOOLEAN, "false");
+			}
+
+			// TODO: Eventually make these defaults configurable
+			if (null == complexTypeDefaultValues) {
+				complexTypeDefaultValues = new Hashtable<String, String>();
+				final String defaultString = "\"TODO\"";
+				complexTypeDefaultValues.put("java.lang.String", defaultString);
+				complexTypeDefaultValues.put("String", defaultString);
 			}
 
 			if (null == simpleTypeByName) {
@@ -469,10 +484,16 @@ public class GenerateTestsAction extends ActionBase {
 			// TODO: implement this possibility
 			break;
 		case Signature.C_RESOLVED:
-			// TODO: implement this possibility
-			break;
 		case Signature.C_UNRESOLVED:
-			// TODO: implement this possibility
+			if ( rest.contains( "<" ) ) {
+				// TODO: Add support for type arguments
+			}
+			else {
+				// just grab rest minus the last character, which should be ';'
+				if (rest.endsWith(";")) {
+					result = rest.substring(0, rest.length() - 1);
+				}				
+			}
 			break;
 		default:	// all others - they are simple types
 			if ( simpleTypeByName.containsKey(firstCharacter) ) {
@@ -502,21 +523,29 @@ public class GenerateTestsAction extends ActionBase {
 			// TODO: implement this possibility
 			break;
 		case Signature.C_ARRAY:
-			typeName = reconstructTypeSignature ( typeSignature );
-			defaultValue = determineInitializationForType(rest);
-			// "[I" -> "new int[] { 0 }"
-			// TODO: Implement arrays of arrays.  For example:
-			// "[[I" -> "new int[][] { { 0 } }"
-			result = "new " + typeName + " { " + defaultValue + " }";
+			result = determineInitializationForArray(typeSignature, rest);
 			break;
 		case Signature.C_CAPTURE:
 			// TODO: implement this possibility
 			break;
 		case Signature.C_RESOLVED:
-			// TODO: implement this possibility
-			break;
 		case Signature.C_UNRESOLVED:
-			// TODO: implement this possibility
+			if ( rest.contains( "<" ) ) {
+				// TODO: Add support for type arguments
+			}
+			else {
+				// just grab rest minus the last character, which should be ';'
+				if (rest.endsWith(";")) {
+					typeName = rest.substring(0, rest.length() - 1);
+				}
+				// then see if there's a pre-defined default
+				if ( complexTypeDefaultValues.containsKey(typeName) ) {
+					result = complexTypeDefaultValues.get(typeName);
+				}
+				else {
+					// TODO: call a constructor if possible
+				}
+			}
 			break;
 		default:	// all others - they are simple types
 			if ( simpleTypeDefaultValues.containsKey(firstCharacter) ) {
@@ -524,6 +553,50 @@ public class GenerateTestsAction extends ActionBase {
 			}
 			break;
 		}
+		return result;
+	}
+
+	/**
+	 * Given that we know the <i>typeSignature</i> to represent an array,
+	 * construct a string representing the initialization of the array type
+	 * represented by the signature.
+	 * @param typeSignature
+	 * @param rest The <i>typeSignature</i> minus its first character.
+	 * @return A string representing the initialization of the type represented
+	 * by <i>typeSignature</i>.
+	 */
+	private String determineInitializationForArray(String typeSignature, String rest) {
+		String result;
+		String typeName = reconstructTypeSignature ( typeSignature );
+		int braceCount = 1;
+		int index;
+		// TODO: In theory, the grammar could allow the sequence "[![",
+		// but this loop won't handle it.  Although, is that even a valid
+		// signature???  What should happen if we hit an invalid signature??
+		for (index = 0; index < rest.length ( ); index++) {
+			char c = rest.charAt(index);
+			if ( Signature.C_ARRAY == c ) {
+				braceCount++;
+			}
+			else {
+				break;
+			}
+		}
+		// rest is whatever is after all those '[' (which index points to) 
+		rest = rest.substring(index);
+		String defaultValue = determineInitializationForType(rest);
+		StringBuffer sb = new StringBuffer ( );
+		sb.append( "new " );
+		sb.append(typeName);
+		sb.append( " " );
+		for ( int c = 0; c < braceCount; c++ ) {
+			sb.append("{ ");
+		}
+		sb.append(defaultValue);
+		for ( int c = 0; c < braceCount; c++ ) {
+			sb.append(" }");
+		}
+		result = sb.toString();
 		return result;
 	}
 
