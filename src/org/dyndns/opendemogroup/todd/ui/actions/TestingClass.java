@@ -1,6 +1,8 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -29,6 +31,7 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 public class TestingClass implements IType {
 
 	private String elementName;
+	private List<IMethod> methods = new ArrayList<IMethod> ( ); 
 
 	public void codeComplete(char[] snippet, int insertion, int position, char[][] localVariableTypeNames, char[][] localVariableNames, int[] localVariableModifiers, boolean isStatic, ICompletionRequestor requestor) throws JavaModelException {
 		// TODO Auto-generated method stub
@@ -137,10 +140,15 @@ public class TestingClass implements IType {
 	}
 
 	public IMethod[] getMethods() throws JavaModelException {
-		// TODO Auto-generated method stub
-		return null;
+		IMethod[] result = new IMethod[methods.size()];
+		methods.toArray(result);
+		return result;
 	}
 
+	public void addMethod ( IMethod method ) {
+		methods.add(method);
+	}
+	
 	public IPackageFragment getPackageFragment() {
 		// TODO Auto-generated method stub
 		return null;

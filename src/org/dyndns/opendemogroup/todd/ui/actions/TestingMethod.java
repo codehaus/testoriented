@@ -1,5 +1,8 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,14 +21,19 @@ import org.eclipse.jdt.core.JavaModelException;
 
 public class TestingMethod implements IMethod {
 
-	private String _ElementName;
+	private String elementName;
+	private boolean constructor = false;
+	private List<String> parameterNames = new ArrayList<String> ( ); 
+	private List<String> parameterTypes = new ArrayList<String> ( );
+	private String returnType;
+	private int flags;
 
 	public String getElementName() {
-		return _ElementName;
+		return elementName;
 	}
 
-	public void setElementName(String elementName) {
-		_ElementName = elementName;
+	public void setElementName(String value) {
+		elementName = value;
 	}
 
 	public String[] getExceptionTypes() throws JavaModelException {
@@ -37,29 +45,38 @@ public class TestingMethod implements IMethod {
 	}
 
 	public int getNumberOfParameters() {
-		// TODO: Implement this later
-		return 0;
+		return parameterNames.size();
 	}
 
 	public String[] getParameterNames() throws JavaModelException {
-		// TODO: Implement this later
-		return null;
+		String[] result = new String[parameterNames.size()];
+		parameterNames.toArray(result);
+		return result;
 	}
 
 	public String[] getParameterTypes() {
-		// TODO: Implement this later
-		return null;
+		String[] result = new String[parameterTypes.size()];
+		parameterTypes.toArray(result);
+		return result;
 	}
 
+	public void addParameter ( String name, String type ) {
+		parameterNames.add(name);
+		parameterTypes.add(type);
+	}
+	
 	public String[] getRawParameterNames() throws JavaModelException {
 		return null;
 	}
 
 	public String getReturnType() throws JavaModelException {
-		// TODO: Implement this later
-		return null;
+		return returnType;
 	}
 
+	public void setReturnType ( String value ) {
+		returnType = value;
+	}
+	
 	public String getSignature() throws JavaModelException {
 		return null;
 	}
@@ -77,9 +94,13 @@ public class TestingMethod implements IMethod {
 	}
 
 	public boolean isConstructor() throws JavaModelException {
-		return false;
+		return constructor;
 	}
 
+	public void setConstructor ( boolean value ) {
+		constructor = value;
+	}
+	
 	public boolean isMainMethod() throws JavaModelException {
 		return false;
 	}
@@ -109,8 +130,11 @@ public class TestingMethod implements IMethod {
 	}
 
 	public int getFlags() throws JavaModelException {
-		// TODO: Implement this later
-		return 0;
+		return flags;
+	}
+	
+	public void setFlags ( int value ) {
+		flags = value;
 	}
 
 	public ISourceRange getJavadocRange() throws JavaModelException {

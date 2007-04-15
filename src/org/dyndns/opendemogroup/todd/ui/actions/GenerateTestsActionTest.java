@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.text.MessageFormat;
 
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IMethod;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -159,5 +161,66 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	@Test public void reconstructTypeSignature_UnresolvedJavaLangString ( ) { 
 		String actual = reconstructTypeSignature(QJAVA_LANG_STRING);
 		assertEquals("java.lang.String", actual);
+	}
+
+	/**
+	 * Tests the <i>determinePreferredConstructor</i> method with 
+	 * a typical scenario put together with lots of mocking.
+	 */
+	@Test public void determinePreferredConstructor_Typical ( ) {
+		TestingClass tc = new TestingClass ( );
+		TestingMethod defaultConstructor = new TestingMethod ( );
+		defaultConstructor.setConstructor(true);
+		tc.addMethod(defaultConstructor);
+		
+		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		parameterizedConstructor.setConstructor(true);
+		parameterizedConstructor.addParameter("Meat", "QString;");
+		tc.addMethod(parameterizedConstructor);
+
+		IMethod actual = determinePreferredConstructor ( tc );
+		assertEquals(defaultConstructor, actual); 
+	}
+
+	/**
+	 * Tests the <i>determinePreferredConstructor</i> method with 
+	 * the non-default constructor listed first.
+	 */
+	@Test public void determinePreferredConstructor_LongerFirst ( ) {
+		TestingClass tc = new TestingClass ( );
+
+		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		parameterizedConstructor.setConstructor(true);
+		parameterizedConstructor.addParameter("Meat", "QString;");
+		tc.addMethod(parameterizedConstructor);
+
+		TestingMethod defaultConstructor = new TestingMethod ( );
+		defaultConstructor.setConstructor(true);
+		tc.addMethod(defaultConstructor);
+
+		IMethod actual = determinePreferredConstructor ( tc );
+		assertEquals(defaultConstructor, actual); 
+	}
+
+
+	/**
+	 * Tests the <i>determinePreferredConstructor</i> method with 
+	 * the default constructor as inaccessible.
+	 */
+	@Test public void determinePreferredConstructor_InaccessibleDefaultConstructor ( ) {
+		TestingClass tc = new TestingClass ( );
+
+		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		parameterizedConstructor.setConstructor(true);
+		parameterizedConstructor.addParameter("Meat", "QString;");
+		tc.addMethod(parameterizedConstructor);
+
+		TestingMethod defaultConstructor = new TestingMethod ( );
+		defaultConstructor.setConstructor(true);
+		defaultConstructor.setFlags(Flags.AccPrivate);
+		tc.addMethod(defaultConstructor);
+
+		IMethod actual = determinePreferredConstructor ( tc );
+		assertEquals(parameterizedConstructor, actual); 
 	}
 }

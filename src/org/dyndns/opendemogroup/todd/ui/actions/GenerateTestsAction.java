@@ -443,18 +443,6 @@ public class GenerateTestsAction extends ActionBase {
 
 		StringBuilder body = new StringBuilder ( );
 		if ( !Flags.isStatic(flags) ) {
-			// TODO: What happens if the class is abstract?  How about we
-			// assume (detect) that there will be some subclasses of this test
-			// class for all implementations (and even create one if none exist)
-			// and delegate the initialization to subclasses by making ourselves
-			// abstract as well? (we'd have to be careful not to fight the user
-			// while doing this)
-			// TODO: What if the shortest constructor is recursive? For example:
-			// Node ( Node parent )
-			// ...although parent could probably be null in this case...
-			// TODO: What if the [shortest] constructor is private?  That might
-			// mean we have a singleton with an "Instance" or other factory
-			// method that creates instances for us.
 			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
 		}
 		// TODO: Use something like:
@@ -469,6 +457,77 @@ public class GenerateTestsAction extends ActionBase {
 		return body.toString();
 	}
 
+	/**								
+	 * Scans the provided <i>testClass</i>'s methods to find accessible
+	 * constructors and then narrows the list to the most desirable/preferable. 
+	 * @param testClass The IType instance for which to scan the methods.
+	 * @return An IMethod from the IType which represents the best constructor
+	 * to call, if one is available; null otherwise.
+	 */
+	static IMethod determinePreferredConstructor(IType testClass) {
+		IMethod result = null;
+		IMethod[] methods = null;
+		// TODO: What if all constructors are private/protected?  That might
+		// mean we have a singleton with an "Instance" or other factory
+		// method that creates instances for us.
+		// TODO: What if the best constructor is recursive? For example:
+		// Node ( Node parent )
+		// ...although parent could probably be null in this case...
+		// TODO: What happens if the class is abstract?  How about we
+		// assume (detect) that there will be some subclasses of this test
+		// class for all implementations (and even create one if none exist)
+		// and delegate the initialization to subclasses by making ourselves
+		// abstract as well? (we'd have to be careful not to fight the user
+		// while doing this)
+		// TODO: Provide a means for configuring an override for user-preferred
+		// constructors, which could be recognizable by an annotation.
+		try {
+			methods = testClass.getMethods();
+			if ( methods != null && methods.length > 0 ) {
+				// let's do this like a contest: the better of every pair of
+				// constructors is kept, unless it's the first one we find...
+				for (int i = 0; i < methods.length; i++) {
+					IMethod method = methods[i];
+					int flags = method.getFlags();
+					// non-static, non-private and non-protected constructors
+					if ( method.isConstructor() 
+							&& !Flags.isStatic(flags) 
+							&& !Flags.isPrivate(flags)
+							&& !Flags.isProtected(flags) ) {
+						if (null == result) {
+							result = method;
+						}
+						else {
+							// is _method_ better than _result_?
+							// TODO: Improve the meaning of "better", because in
+							// this case, there is "another kind of better". For
+							// example, maybe we should avoid recursive
+							// constructors, deprecated ones, etc.
+							if ( method.getNumberOfParameters() 
+									< result.getNumberOfParameters() ) {
+								result = method;
+							}
+						}
+					}
+				}
+			}
+		} catch (JavaModelException jme) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource.
+			// I'll just go ahead and ignore this for now...
+		}
+
+		return result;
+	}
+
+	/**
+	 * Given a string representation of a type signature, parses it and attempts
+	 * to reconstruct what the declaration would have looked like in source
+	 * code before it was converted into a signature.
+	 * @param typeSignature A string representation of a type's signature.
+	 * @return A string representation of the source code that likely produced
+	 * the signature.
+	 */
 	String reconstructTypeSignature ( String typeSignature ) {
 		char firstCharacter = typeSignature.charAt(0);
 		String rest = typeSignature.substring(1);
@@ -485,6 +544,9 @@ public class GenerateTestsAction extends ActionBase {
 			break;
 		case Signature.C_RESOLVED:
 		case Signature.C_UNRESOLVED:
+			// TODO: add support for common simplifications, such as:
+			// java.lang.String -> String
+			// java.lang.Object -> Object
 			if ( rest.contains( "<" ) ) {
 				// TODO: Add support for type arguments
 			}
@@ -534,6 +596,9 @@ public class GenerateTestsAction extends ActionBase {
 				// TODO: Add support for type arguments
 			}
 			else {
+				// TODO: Handle nested types
+				// (such as java.util.Map<K,V>.Entry<K,V>)
+
 				// just grab rest minus the last character, which should be ';'
 				if (rest.endsWith(";")) {
 					typeName = rest.substring(0, rest.length() - 1);
@@ -600,11 +665,20 @@ public class GenerateTestsAction extends ActionBase {
 		return result;
 	}
 
+	/**
+	 * Given the name of a class, attempts to create a suitable name for an
+	 * instance variable in which an instance of said class could be assigned.
+	 * @param className The name of a class.
+	 * @return The name of a variable.
+	 */
 	static String determineInstanceVariableName ( String className ) {
 		// TODO: Investigate the use of the 
 		// org.eclipse.jdt.internal.core.InternalNamingConventions
 		// class' suggestLocalVariableNames method, since it has support for
 		// exclusions (to prevent collisions), project pre- and suf- fixes, etc.
+		
+		// TODO: Handle nested classes (such as Map<K,V>.Entry<K,V>) and
+		// qualified names (such as java.lang.String)
 
 		String result = "instance"; // default value
 
