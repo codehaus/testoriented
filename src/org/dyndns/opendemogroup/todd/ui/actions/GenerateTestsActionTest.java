@@ -13,6 +13,10 @@ import org.junit.Test;
  */
 public class GenerateTestsActionTest extends GenerateTestsAction {
 
+	private static final String QJAVA_LANG_STRING = "Qjava.lang.String;";
+	private static final String QSTRING = "QString;";
+	private static final String LJAVA_LANG_STRING = "Ljava.lang.String;";
+
 	@Before
 	public void initializeNewLine ( ) {
 		newLine = System.getProperty("line.separator");
@@ -86,6 +90,42 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	}
 
 	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * the sample signature <c>[[I</c>.
+	 */
+	@Test public void determineInitializationForType_ArrayOfArrayOfInt ( ) {
+		String actual = determineInitializationForType ( "[[I" );
+		assertEquals("new int[][] { { 0 } }", actual);
+	}
+
+	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * a resolved string, written as <c>Ljava.lang.String;</c>.
+	 */
+	@Test public void determineInitializationForType_ResolvedJavaLangString ( ) {
+		String actual = determineInitializationForType(LJAVA_LANG_STRING);
+		assertEquals("\"TODO\"", actual);
+	}
+
+	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * an unresolved string, written as <c>QString;</c>.
+	 */
+	@Test public void determineInitializationForType_UnresolvedString ( ) {
+		String actual = determineInitializationForType(QSTRING);
+		assertEquals("\"TODO\"", actual);
+	}
+
+	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * an unresolved string, written as <c>Qjava.lang.String;</c>.
+	 */
+	@Test public void determineInitializationForType_UnresolvedJavaLangString ( ) {
+		String actual = determineInitializationForType(QJAVA_LANG_STRING);
+		assertEquals("\"TODO\"", actual);
+	}
+
+	/**
 	 * Tests the <i>reconstructTypeSignature</i> method with 
 	 * the sample signature <c>[[I</c>.
 	 */
@@ -94,4 +134,30 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		assertEquals("int[][]", actual); 
 	}
 
+	/**
+	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * a resolved string, written as <c>Ljava.lang.String;</c>.
+	 */
+	@Test public void reconstructTypeSignature_ResolvedJavaLangString ( ) { 
+		String actual = reconstructTypeSignature(LJAVA_LANG_STRING);
+		assertEquals("java.lang.String", actual);
+	}
+
+	/**
+	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * an unresolved string, written as <c>QString;</c>.
+	 */
+	@Test public void reconstructTypeSignature_UnresolvedString ( ) { 
+		String actual = reconstructTypeSignature(QSTRING);
+		assertEquals("String", actual);
+	}
+
+	/**
+	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * an unresolved string, written as <c>Qjava.lang.String;</c>.
+	 */
+	@Test public void reconstructTypeSignature_UnresolvedJavaLangString ( ) { 
+		String actual = reconstructTypeSignature(QJAVA_LANG_STRING);
+		assertEquals("java.lang.String", actual);
+	}
 }
