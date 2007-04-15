@@ -67,4 +67,13 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		assertEquals("instance", actual);
 	}
 
+	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * a type of char.
+	 */
+	@Test public void determineInitializationForType_Character ( ) { 
+		String actual = determineInitializationForType ( "C" );
+		assertEquals("'x'", actual); 
+	}
+
 }
