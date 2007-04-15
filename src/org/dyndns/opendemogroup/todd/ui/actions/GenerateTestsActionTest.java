@@ -76,4 +76,22 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		assertEquals("'x'", actual); 
 	}
 
+	/**
+	 * Tests the <i>determineInitializationForType</i> method with 
+	 * the sample signature <c>[I</c>.
+	 */
+	@Test public void determineInitializationForType_ArrayOfInt ( ) {
+		String actual = determineInitializationForType ( "[I" );
+		assertEquals("new int[] { 0 }", actual);
+	}
+
+	/**
+	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * the sample signature <c>[[I</c>.
+	 */
+	@Test public void reconstructTypeSignature_ArrayOfArrayOfInt ( ) { 
+		String actual = reconstructTypeSignature ( "[[I" );
+		assertEquals("int[][]", actual); 
+	}
+
 }

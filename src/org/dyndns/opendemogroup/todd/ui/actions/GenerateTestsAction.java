@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -33,24 +34,43 @@ public class GenerateTestsAction extends ActionBase {
 	 * representations (as the TypeSignature) and sensible values for defaults
 	 * when initializing them. 
 	 */
-	private static Hashtable<Character, String> simpleTypeMapping = null;
+	private static Hashtable<Character, String> simpleTypeDefaultValues = null;
+	
+	/**
+	 * Represents a mapping of single-character primitive type name
+	 * representations and their usual string representations in source code. 
+	 */
+	private static Hashtable<Character, String> simpleTypeByName = null;
 
 	public GenerateTestsAction ( ) {
 		super ( );
 		synchronized (GenerateTestsAction.class) {
-			if (null == simpleTypeMapping) {
-				simpleTypeMapping = new Hashtable<Character, String>();
-				simpleTypeMapping.put('B', "0"); // byte
-				simpleTypeMapping.put('C', "'x'"); // char
-				simpleTypeMapping.put('D', "0.0"); // double
-				simpleTypeMapping.put('F', "0.0f"); // float
-				simpleTypeMapping.put('I', "0"); // int
-				simpleTypeMapping.put('J', "0L"); // long
-				simpleTypeMapping.put('S', "0"); // short
-				simpleTypeMapping.put('V', "null"); // void
-				simpleTypeMapping.put('Z', "false"); // boolean
+			if (null == simpleTypeDefaultValues) {
+				simpleTypeDefaultValues = new Hashtable<Character, String>();
+				simpleTypeDefaultValues.put(Signature.C_BYTE, "0");
+				simpleTypeDefaultValues.put(Signature.C_CHAR, "'x'");
+				simpleTypeDefaultValues.put(Signature.C_DOUBLE, "0.0");
+				simpleTypeDefaultValues.put(Signature.C_FLOAT, "0.0f");
+				simpleTypeDefaultValues.put(Signature.C_INT, "0");
+				simpleTypeDefaultValues.put(Signature.C_LONG, "0L");
+				simpleTypeDefaultValues.put(Signature.C_SHORT, "0");
+				simpleTypeDefaultValues.put(Signature.C_VOID, "null");
+				simpleTypeDefaultValues.put(Signature.C_BOOLEAN, "false");
 			}
-		}		
+
+			if (null == simpleTypeByName) {
+				simpleTypeByName = new Hashtable<Character, String>();
+				simpleTypeByName.put(Signature.C_BYTE, "byte");
+				simpleTypeByName.put(Signature.C_CHAR, "char");
+				simpleTypeByName.put(Signature.C_DOUBLE, "double");
+				simpleTypeByName.put(Signature.C_FLOAT, "float");
+				simpleTypeByName.put(Signature.C_INT, "int");
+				simpleTypeByName.put(Signature.C_LONG, "long");
+				simpleTypeByName.put(Signature.C_SHORT, "short");
+				simpleTypeByName.put(Signature.C_VOID, "void");
+				simpleTypeByName.put(Signature.C_BOOLEAN, "boolean");
+			}
+}		
 	}
 	
 	/**
@@ -422,12 +442,45 @@ public class GenerateTestsAction extends ActionBase {
 			// method that creates instances for us.
 			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
 		}
+		// TODO: Use something like:
+		// org.eclipse.jdt.core.NamingConventions.suggestLocalVariableNames
+		// ...if a parameter's name is not available or conflicts with an
+		// existing name in the current scope.
 		String bodyTemplate = 
 			"\t// TODO: invoke {2}.{0} and assert properties of its effects/output{1}" +
 			"\tfail ( \"Test not yet written\" ); {1}" +
 			"";
 		appendFormat(body, bodyTemplate, methodName, newLine, instanceOrClass);
 		return body.toString();
+	}
+
+	String reconstructTypeSignature ( String typeSignature ) {
+		char firstCharacter = typeSignature.charAt(0);
+		String rest = typeSignature.substring(1);
+		String result = "null";
+		switch ( firstCharacter ) {
+		case Signature.C_TYPE_VARIABLE:
+			// TODO: implement this possibility
+			break;
+		case Signature.C_ARRAY:
+			result = reconstructTypeSignature(rest) + "[]";
+			break;
+		case Signature.C_CAPTURE:
+			// TODO: implement this possibility
+			break;
+		case Signature.C_RESOLVED:
+			// TODO: implement this possibility
+			break;
+		case Signature.C_UNRESOLVED:
+			// TODO: implement this possibility
+			break;
+		default:	// all others - they are simple types
+			if ( simpleTypeByName.containsKey(firstCharacter) ) {
+				result = simpleTypeByName.get(firstCharacter);
+			}
+			break;
+		}
+		return result;
 	}
 	
 	/**
@@ -440,26 +493,34 @@ public class GenerateTestsAction extends ActionBase {
 	 */
 	String determineInitializationForType ( String typeSignature ) {
 		char firstCharacter = typeSignature.charAt(0);
+		String rest = typeSignature.substring(1);
 		String result = "null";
+		String typeName = null;
+		String defaultValue = null;
 		switch ( firstCharacter ) {
-		case 'T':	// type variable
+		case Signature.C_TYPE_VARIABLE:
 			// TODO: implement this possibility
 			break;
-		case '[':	// array X[]
+		case Signature.C_ARRAY:
+			typeName = reconstructTypeSignature ( typeSignature );
+			defaultValue = determineInitializationForType(rest);
+			// "[I" -> "new int[] { 0 }"
+			// TODO: Implement arrays of arrays.  For example:
+			// "[[I" -> "new int[][] { { 0 } }"
+			result = "new " + typeName + " { " + defaultValue + " }";
+			break;
+		case Signature.C_CAPTURE:
 			// TODO: implement this possibility
 			break;
-		case '!':	// capture-of ?
+		case Signature.C_RESOLVED:
 			// TODO: implement this possibility
 			break;
-		case 'L':	// resolved named type (in compiled code)
-			// TODO: implement this possibility
-			break;
-		case 'Q':	// unresolved named type (in source code)
+		case Signature.C_UNRESOLVED:
 			// TODO: implement this possibility
 			break;
 		default:	// all others - they are simple types
-			if ( simpleTypeMapping.containsKey(firstCharacter) ) {
-				result = simpleTypeMapping.get(firstCharacter);
+			if ( simpleTypeDefaultValues.containsKey(firstCharacter) ) {
+				result = simpleTypeDefaultValues.get(firstCharacter);
 			}
 			break;
 		}
