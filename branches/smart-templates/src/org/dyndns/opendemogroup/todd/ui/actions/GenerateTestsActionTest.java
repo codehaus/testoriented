@@ -135,38 +135,38 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	}
 
 	/**
-	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * Tests the <i>determineDeclarationForType</i> method with 
 	 * the sample signature <code>[[I</code>.
 	 */
-	@Test public void reconstructTypeSignature_ArrayOfArrayOfInt ( ) { 
-		String actual = reconstructTypeSignature ( "[[I" );
+	@Test public void determineDeclarationForType_ArrayOfArrayOfInt ( ) { 
+		String actual = determineDeclarationForType ( "[[I" );
 		assertEquals("int[][]", actual); 
 	}
 
 	/**
-	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * Tests the <i>determineDeclarationForType</i> method with 
 	 * a resolved string, written as <code>Ljava.lang.String;</code>.
 	 */
-	@Test public void reconstructTypeSignature_ResolvedJavaLangString ( ) { 
-		String actual = reconstructTypeSignature(LJAVA_LANG_STRING);
+	@Test public void determineDeclarationForType_ResolvedJavaLangString ( ) { 
+		String actual = determineDeclarationForType(LJAVA_LANG_STRING);
 		assertEquals("java.lang.String", actual);
 	}
 
 	/**
-	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * Tests the <i>determineDeclarationForType</i> method with 
 	 * an unresolved string, written as <code>QString;</code>.
 	 */
-	@Test public void reconstructTypeSignature_UnresolvedString ( ) { 
-		String actual = reconstructTypeSignature(QSTRING);
+	@Test public void determineDeclarationForType_UnresolvedString ( ) { 
+		String actual = determineDeclarationForType(QSTRING);
 		assertEquals("String", actual);
 	}
 
 	/**
-	 * Tests the <i>reconstructTypeSignature</i> method with 
+	 * Tests the <i>determineDeclarationForType</i> method with 
 	 * an unresolved string, written as <code>Qjava.lang.String;</code>.
 	 */
-	@Test public void reconstructTypeSignature_UnresolvedJavaLangString ( ) { 
-		String actual = reconstructTypeSignature(QJAVA_LANG_STRING);
+	@Test public void determineDeclarationForType_UnresolvedJavaLangString ( ) { 
+		String actual = determineDeclarationForType(QJAVA_LANG_STRING);
 		assertEquals("java.lang.String", actual);
 	}
 

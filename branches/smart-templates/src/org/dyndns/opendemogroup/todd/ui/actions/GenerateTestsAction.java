@@ -489,7 +489,7 @@ public class GenerateTestsAction extends ActionBase {
 			for (int i = 0; i < numberOfParameters; i++) {
 				String parameterName = parameterNames[i];
 				String parameterType = parameterTypes[i];
-				String declaration = reconstructTypeSignature(parameterType);
+				String declaration = determineDeclarationForType(parameterType);
 				String initialization = determineInitializationForType(parameterType);
 				appendFormat(sb, 
 					"\t{0} {1} = {2};", 
@@ -596,7 +596,7 @@ public class GenerateTestsAction extends ActionBase {
 	 * @return A string representation of the source code that likely produced
 	 * the signature.
 	 */
-	String reconstructTypeSignature ( String typeSignature ) {
+	String determineDeclarationForType ( String typeSignature ) {
 		char firstCharacter = typeSignature.charAt(0);
 		String rest = typeSignature.substring(1);
 		String result = "null";
@@ -605,7 +605,7 @@ public class GenerateTestsAction extends ActionBase {
 			// TODO: implement this possibility
 			break;
 		case Signature.C_ARRAY:
-			result = reconstructTypeSignature(rest) + "[]";
+			result = determineDeclarationForType(rest) + "[]";
 			break;
 		case Signature.C_CAPTURE:
 			// TODO: implement this possibility
@@ -700,7 +700,7 @@ public class GenerateTestsAction extends ActionBase {
 	 */
 	private String determineInitializationForArray(String typeSignature, String rest) {
 		String result;
-		String typeName = reconstructTypeSignature ( typeSignature );
+		String typeName = determineDeclarationForType ( typeSignature );
 		int braceCount = 1;
 		int index;
 		// TODO: In theory, the grammar could allow the sequence "[![",
