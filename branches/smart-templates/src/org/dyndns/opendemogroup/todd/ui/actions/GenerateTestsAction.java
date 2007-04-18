@@ -427,23 +427,26 @@ public class GenerateTestsAction extends ActionBase {
 	String generateTestMethodBody(IMethod methodToTest, IType testClass) {
 		String className = testClass.getElementName();
 		String methodName = methodToTest.getElementName();
-		int flags = 0;
+		int methodFlags = 0;
 		try {
-			flags = methodToTest.getFlags();
+			methodFlags = methodToTest.getFlags();
 		} catch (JavaModelException jme) {
 			// jme thrown if element does not exist (impossible) or if an
 			// exception occurs while accessing its corresponding resource, so
 			// let's ignore it for now and pretend it never happened.
 		}
-		// TODO: create an instance variable name based on the class name
 		String instanceOrClass = 
-			Flags.isStatic(flags) 
+			Flags.isStatic(methodFlags) 
 			? className 
 			: determineInstanceVariableName(className);
 
 		StringBuilder body = new StringBuilder ( );
-		if ( !Flags.isStatic(flags) ) {
-			appendFormat(body, "\t// TODO: Create an instance of the {2} class, using the shortest constructor available {1}", "", newLine, className );
+		if ( !Flags.isStatic(methodFlags) ) {
+			IMethod constructor = determinePreferredConstructor(testClass);
+			if (constructor != null) {
+				String methodCall = generateCallStub(constructor);
+				body.append(methodCall);
+			}
 		}
 		// TODO: Use something like:
 		// org.eclipse.jdt.core.NamingConventions.suggestLocalVariableNames
@@ -455,6 +458,71 @@ public class GenerateTestsAction extends ActionBase {
 			"";
 		appendFormat(body, bodyTemplate, methodName, newLine, instanceOrClass);
 		return body.toString();
+	}
+
+	/**
+	 * <p>
+	 * Given a method, will generate some code that declares and initializes
+	 * variables corresponding to the method's parameters (if any) and then
+	 * calls the method.
+	 * </p>
+	 * <p>
+	 * This will work with methods that represent constructors, too.  In that
+	 * case, a new instance of the type in which the constructor method is found
+	 * will be created.
+	 * </p>
+	 * @param method The method for which to generate code that calls it.
+	 * @return A string representation of the code necessary to call the method
+	 * and any supporting code necessary to initialize variables matching the
+	 * method's parameters.
+	 */
+	String generateCallStub(IMethod method) {
+		// TODO: if the method returns something, allow the user to provide
+		// a name for that variable.
+		StringBuilder sb = new StringBuilder ( );
+		int numberOfParameters = method.getNumberOfParameters();
+		String methodCall = null;
+		try {
+			String[] parameterNames = method.getParameterNames();
+			String[] parameterTypes = method.getParameterTypes();
+			// generate parameter variable initialization(s)
+			for (int i = 0; i < numberOfParameters; i++) {
+				String parameterName = parameterNames[i];
+				String parameterType = parameterTypes[i];
+				String declaration = reconstructTypeSignature(parameterType);
+				String initialization = determineInitializationForType(parameterType);
+				appendFormat(sb, 
+					"\t{0} {1} = {2};", 
+					declaration, parameterName, initialization);
+				sb.append(newLine);
+			}
+			sb.append("\t");
+			// TODO: generate one of:
+			// 1 - "className instanceOrClass = "
+			// 2 - "returnType actual = "
+			// ...if method returns something
+			// TODO: generate one of:
+			// 1 - new className
+			// 2 - instanceOrClass.methodName
+			sb.append("// TODO: prelude");
+			// generate argument/parameter list
+			sb.append(" ( ");
+			for (int i = 0; i < numberOfParameters; i++) {
+				String parameterName = parameterNames[i];
+				if ( i > 0 ) {
+					sb.append(", ");
+				}
+				sb.append(parameterName);
+			}
+			sb.append(" );");
+			sb.append(newLine);
+			methodCall = sb.toString();
+		} catch (JavaModelException e) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource,
+			// which means we weren't able to generate a method call
+		}		
+		return methodCall;
 	}
 
 	/**								
@@ -696,7 +764,7 @@ public class GenerateTestsAction extends ActionBase {
 
 		return result;
 	}
-
+	
 	/**
 	 * Convenience method to emulate a method of the same name in .NET's
 	 * StringBuilder class.

@@ -25,7 +25,7 @@ public class TestingMethod implements IMethod {
 	private boolean constructor = false;
 	private List<String> parameterNames = new ArrayList<String> ( ); 
 	private List<String> parameterTypes = new ArrayList<String> ( );
-	private String returnType;
+	private String returnType = "V"; // default to void
 	private int flags;
 
 	public String getElementName() {

@@ -31,11 +31,18 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	 */
 	@Test
 	public void generateTestMethod_Typical ( ) {
-		TestingMethod tm = new TestingMethod ();
-		tm.setElementName("Unformat");
 		TestingClass tc = new TestingClass ( );
 		tc.setElementName("Unformatter");
-		String actual = generateTestMethod(tm, tc);
+
+		TestingMethod methodToTest = new TestingMethod ();
+		methodToTest.setElementName("Unformat");
+		tc.addMethod(methodToTest);
+
+		TestingMethod constructor = new TestingMethod ( );
+		constructor.setConstructor(true);
+		tc.addMethod(constructor);
+
+		String actual = generateTestMethod(methodToTest, tc);
 		String testMethodTemplate =
 			"{0}" +
 			"/**{0}" +
@@ -43,7 +50,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			" * TODO: write about scenario{0}" +
 			" */{0}" +
 			"@Test public void Unformat_TODO ( ) '{' {0}" +
-			"\t// TODO: Create an instance of the Unformatter class, using the shortest constructor available {0}" +
+			"\t// TODO: prelude (  );{0}" +
 			"\t// TODO: invoke unformatter.Unformat and assert properties of its effects/output{0}" +
 			"\tfail ( \"Test not yet written\" ); {0}" +
 			"}{0}" +
@@ -84,7 +91,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>determineInitializationForType</i> method with 
-	 * the sample signature <c>[I</c>.
+	 * the sample signature <code>[I</code>.
 	 */
 	@Test public void determineInitializationForType_ArrayOfInt ( ) {
 		String actual = determineInitializationForType ( "[I" );
@@ -93,7 +100,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>determineInitializationForType</i> method with 
-	 * the sample signature <c>[[I</c>.
+	 * the sample signature <code>[[I</code>.
 	 */
 	@Test public void determineInitializationForType_ArrayOfArrayOfInt ( ) {
 		String actual = determineInitializationForType ( "[[I" );
@@ -102,7 +109,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>determineInitializationForType</i> method with 
-	 * a resolved string, written as <c>Ljava.lang.String;</c>.
+	 * a resolved string, written as <code>Ljava.lang.String;</code>.
 	 */
 	@Test public void determineInitializationForType_ResolvedJavaLangString ( ) {
 		String actual = determineInitializationForType(LJAVA_LANG_STRING);
@@ -111,7 +118,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>determineInitializationForType</i> method with 
-	 * an unresolved string, written as <c>QString;</c>.
+	 * an unresolved string, written as <code>QString;</code>.
 	 */
 	@Test public void determineInitializationForType_UnresolvedString ( ) {
 		String actual = determineInitializationForType(QSTRING);
@@ -120,7 +127,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>determineInitializationForType</i> method with 
-	 * an unresolved string, written as <c>Qjava.lang.String;</c>.
+	 * an unresolved string, written as <code>Qjava.lang.String;</code>.
 	 */
 	@Test public void determineInitializationForType_UnresolvedJavaLangString ( ) {
 		String actual = determineInitializationForType(QJAVA_LANG_STRING);
@@ -129,7 +136,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>reconstructTypeSignature</i> method with 
-	 * the sample signature <c>[[I</c>.
+	 * the sample signature <code>[[I</code>.
 	 */
 	@Test public void reconstructTypeSignature_ArrayOfArrayOfInt ( ) { 
 		String actual = reconstructTypeSignature ( "[[I" );
@@ -138,7 +145,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>reconstructTypeSignature</i> method with 
-	 * a resolved string, written as <c>Ljava.lang.String;</c>.
+	 * a resolved string, written as <code>Ljava.lang.String;</code>.
 	 */
 	@Test public void reconstructTypeSignature_ResolvedJavaLangString ( ) { 
 		String actual = reconstructTypeSignature(LJAVA_LANG_STRING);
@@ -147,7 +154,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>reconstructTypeSignature</i> method with 
-	 * an unresolved string, written as <c>QString;</c>.
+	 * an unresolved string, written as <code>QString;</code>.
 	 */
 	@Test public void reconstructTypeSignature_UnresolvedString ( ) { 
 		String actual = reconstructTypeSignature(QSTRING);
@@ -156,7 +163,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>reconstructTypeSignature</i> method with 
-	 * an unresolved string, written as <c>Qjava.lang.String;</c>.
+	 * an unresolved string, written as <code>Qjava.lang.String;</code>.
 	 */
 	@Test public void reconstructTypeSignature_UnresolvedJavaLangString ( ) { 
 		String actual = reconstructTypeSignature(QJAVA_LANG_STRING);
@@ -173,9 +180,8 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		defaultConstructor.setConstructor(true);
 		tc.addMethod(defaultConstructor);
 		
-		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		TestingMethod parameterizedConstructor = createEatMeatMethod();
 		parameterizedConstructor.setConstructor(true);
-		parameterizedConstructor.addParameter("Meat", "QString;");
 		tc.addMethod(parameterizedConstructor);
 
 		IMethod actual = determinePreferredConstructor ( tc );
@@ -189,9 +195,8 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	@Test public void determinePreferredConstructor_LongerFirst ( ) {
 		TestingClass tc = new TestingClass ( );
 
-		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		TestingMethod parameterizedConstructor = createEatMeatMethod();
 		parameterizedConstructor.setConstructor(true);
-		parameterizedConstructor.addParameter("Meat", "QString;");
 		tc.addMethod(parameterizedConstructor);
 
 		TestingMethod defaultConstructor = new TestingMethod ( );
@@ -202,7 +207,6 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		assertEquals(defaultConstructor, actual); 
 	}
 
-
 	/**
 	 * Tests the <i>determinePreferredConstructor</i> method with 
 	 * the default constructor as inaccessible.
@@ -210,9 +214,8 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	@Test public void determinePreferredConstructor_InaccessibleDefaultConstructor ( ) {
 		TestingClass tc = new TestingClass ( );
 
-		TestingMethod parameterizedConstructor = new TestingMethod ( );
+		TestingMethod parameterizedConstructor = createEatMeatMethod();
 		parameterizedConstructor.setConstructor(true);
-		parameterizedConstructor.addParameter("Meat", "QString;");
 		tc.addMethod(parameterizedConstructor);
 
 		TestingMethod defaultConstructor = new TestingMethod ( );
@@ -222,5 +225,73 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 		IMethod actual = determinePreferredConstructor ( tc );
 		assertEquals(parameterizedConstructor, actual); 
+	}
+
+	/**
+	 * Convenience method that creates a special instance of the
+	 * TestingMethod class and initializes it accordingly.
+	 * @return An instance of the <i>TestingMethod</i> class representing
+	 * the following method:
+	 * <code>public void eat ( String meat );</code> 
+	 */
+	private TestingMethod createEatMeatMethod() {
+		TestingMethod result = new TestingMethod ( );
+		result.setElementName("eat");
+		result.addParameter("meat", "QString;");
+		return result;
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, one-argument method call.
+	 */
+	@Test public void generateCallStub_OneArgumentMethod ( ) { 
+		TestingMethod tm = createEatMeatMethod();
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\t// TODO: prelude ( meat );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, two-argument method call.
+	 */
+	@Test public void generateCallStub_TwoArgumentMethod ( ) {
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.addParameter("veggies", "Z"); // boolean
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\t// TODO: prelude ( meat, veggies );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a parameterized constructor.
+	 */
+	@Test public void generateCallStub_Constructor ( ) {
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.addParameter("veggies", "Z"); // boolean
+		tm.addParameter("numberOfDesserts", "I"); // int
+		tm.setConstructor(true);
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\tint numberOfDesserts = 0;{0}" + 
+			"\t// TODO: prelude ( meat, veggies, numberOfDesserts );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
 	}
 }
