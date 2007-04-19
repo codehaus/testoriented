@@ -145,7 +145,8 @@ public class TestingClass implements IType {
 		return result;
 	}
 
-	public void addMethod ( IMethod method ) {
+	public void addMethod ( TestingMethod method ) {
+		method.setDeclaringType(this);
 		methods.add(method);
 	}
 	

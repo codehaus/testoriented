@@ -25,7 +25,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	}
 
 	/**
-	 * A slightly lame test of 
+	 * A <i>comprehensive</i> test of 
 	 * {@link GenerateTestsAction#generateTestMethod(IMethod,String)}
 	 * that exercises the typical use.
 	 */
@@ -34,8 +34,12 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		TestingClass tc = new TestingClass ( );
 		tc.setElementName("Unformatter");
 
+		// public String[] unformat ( String format, String formatted ) 
 		TestingMethod methodToTest = new TestingMethod ();
-		methodToTest.setElementName("Unformat");
+		methodToTest.setElementName("unformat");
+		methodToTest.addParameter("format", QSTRING);
+		methodToTest.addParameter("formatted", QSTRING);
+		methodToTest.setReturnType("[" + QSTRING);
 		tc.addMethod(methodToTest);
 
 		TestingMethod constructor = new TestingMethod ( );
@@ -46,13 +50,17 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		String testMethodTemplate =
 			"{0}" +
 			"/**{0}" +
-			" * Tests the <i>Unformat</i> method with {0}" +
+			" * Tests the <i>unformat</i> method with {0}" +
 			" * TODO: write about scenario{0}" +
 			" */{0}" +
-			"@Test public void Unformat_TODO ( ) '{' {0}" +
-			"\t// TODO: prelude (  );{0}" +
-			"\t// TODO: invoke unformatter.Unformat and assert properties of its effects/output{0}" +
-			"\tfail ( \"Test not yet written\" ); {0}" +
+			"@Test public void unformat_TODO ( ) '{' {0}" +
+			"\tUnformatter unformatter = new Unformatter (  );{0}" +
+			"\tfail ( \"TODO: initialize variable(s) and expected value\" );{0}" +
+			"\tString format = \"TODO\";{0}" +
+			"\tString formatted = \"TODO\";{0}" +
+			"\tString[] actual = unformatter.unformat ( format, formatted );{0}" +
+			"\tString[] expected = new String[] '{' \"TODO\" };{0}" +
+			"\tassertEquals ( expected, actual );{0}" +
 			"}{0}" +
 			"";
 		String expected = 
@@ -245,11 +253,14 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	 * Tests the <i>generateCallStub</i> method with 
 	 * a simple, one-argument method call.
 	 */
-	@Test public void generateCallStub_OneArgumentMethod ( ) { 
+	@Test public void generateCallStub_OneArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
 		TestingMethod tm = createEatMeatMethod();
+		tc.addMethod(tm);
 		String expectedTemplate = 
 			"\tString meat = \"TODO\";{0}" + 
-			"\t// TODO: prelude ( meat );{0}";
+			"\tunformatter.eat ( meat );{0}";
 		String expected = 
 			MessageFormat.format( expectedTemplate, newLine );
 		String actual = generateCallStub ( tm );
@@ -261,13 +272,38 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	 * a simple, two-argument method call.
 	 */
 	@Test public void generateCallStub_TwoArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
 		// it's really an extension/overload of the usual method
 		TestingMethod tm = createEatMeatMethod();
 		tm.addParameter("veggies", "Z"); // boolean
+		tc.addMethod(tm);
 		String expectedTemplate = 
 			"\tString meat = \"TODO\";{0}" + 
 			"\tboolean veggies = false;{0}" + 
-			"\t// TODO: prelude ( meat, veggies );{0}";
+			"\tunformatter.eat ( meat, veggies );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, two-argument method call that returns a value.
+	 */
+	@Test public void generateCallStub_TwoArgumentMethodWithReturn ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.addParameter("veggies", "Z"); // boolean
+		tm.setReturnType(QSTRING);
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\tString actual = unformatter.eat ( meat, veggies );{0}";
 		String expected = 
 			MessageFormat.format( expectedTemplate, newLine );
 		String actual = generateCallStub ( tm );
@@ -279,16 +315,68 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	 * a parameterized constructor.
 	 */
 	@Test public void generateCallStub_Constructor ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
 		// it's really an extension/overload of the usual method
 		TestingMethod tm = createEatMeatMethod();
 		tm.addParameter("veggies", "Z"); // boolean
 		tm.addParameter("numberOfDesserts", "I"); // int
 		tm.setConstructor(true);
+		tc.addMethod(tm);
 		String expectedTemplate = 
 			"\tString meat = \"TODO\";{0}" + 
 			"\tboolean veggies = false;{0}" + 
 			"\tint numberOfDesserts = 0;{0}" + 
-			"\t// TODO: prelude ( meat, veggies, numberOfDesserts );{0}";
+			"\tUnformatter unformatter = new Unformatter ( meat, veggies, numberOfDesserts );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+	
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a static method call.
+	 */
+	@Test public void generateCallStub_StaticMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.setFlags(Flags.AccStatic);
+		tm.addParameter("veggies", "Z"); // boolean
+		tm.addParameter("numberOfDesserts", "I"); // int
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\tint numberOfDesserts = 0;{0}" + 
+			"\tUnformatter.eat ( meat, veggies, numberOfDesserts );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+	
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a static method call that returns something.
+	 */
+	@Test public void generateCallStub_StaticMethodWithReturn ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.setFlags(Flags.AccStatic);
+		tm.addParameter("veggies", "Z"); // boolean
+		tm.addParameter("numberOfDesserts", "I"); // int
+		tm.setReturnType(QSTRING);
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\tint numberOfDesserts = 0;{0}" + 
+			"\tString actual = Unformatter.eat ( meat, veggies, numberOfDesserts );{0}";
 		String expected = 
 			MessageFormat.format( expectedTemplate, newLine );
 		String actual = generateCallStub ( tm );
