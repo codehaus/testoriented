@@ -425,38 +425,49 @@ public class GenerateTestsAction extends ActionBase {
 	 * @return
 	 */
 	String generateTestMethodBody(IMethod methodToTest, IType testClass) {
-		String className = testClass.getElementName();
-		String methodName = methodToTest.getElementName();
 		int methodFlags = 0;
+		String returnType = "V";
 		try {
 			methodFlags = methodToTest.getFlags();
+			returnType = methodToTest.getReturnType();
 		} catch (JavaModelException jme) {
 			// jme thrown if element does not exist (impossible) or if an
 			// exception occurs while accessing its corresponding resource, so
-			// let's ignore it for now and pretend it never happened.
+			// let's ignore it for now and pretend it never happened, since we
+			// have reasonable defaults
 		}
-		String instanceOrClass = 
-			Flags.isStatic(methodFlags) 
-			? className 
-			: determineInstanceVariableName(className);
 
 		StringBuilder body = new StringBuilder ( );
 		if ( !Flags.isStatic(methodFlags) ) {
 			IMethod constructor = determinePreferredConstructor(testClass);
 			if (constructor != null) {
-				String methodCall = generateCallStub(constructor);
-				body.append(methodCall);
+				String construction = generateCallStub(constructor);
+				body.append(construction);
 			}
 		}
+		
+		// TODO: I can actually find out how many variables/parameters there
+		// are, (if any!) so this message could be much more accurate...
+		body.append("\tfail ( \"TODO: initialize variable(s)");
+		if (returnType != "V") {
+			body.append(" and expected value");
+		}
+		body.append("\" );");
+		body.append(newLine);
 		// TODO: Use something like:
 		// org.eclipse.jdt.core.NamingConventions.suggestLocalVariableNames
 		// ...if a parameter's name is not available or conflicts with an
 		// existing name in the current scope.
-		String bodyTemplate = 
-			"\t// TODO: invoke {2}.{0} and assert properties of its effects/output{1}" +
-			"\tfail ( \"Test not yet written\" ); {1}" +
-			"";
-		appendFormat(body, bodyTemplate, methodName, newLine, instanceOrClass);
+		String methodCall = generateCallStub(methodToTest);
+		body.append(methodCall);
+		if ( returnType != "V" ) {
+			String declaration = determineDeclarationForType(returnType);
+			String initialization = determineInitializationForType(returnType);
+			appendFormat(body, "\t{0} expected = {1};{2}", 
+					declaration, initialization, newLine);
+			body.append ( "\tassertEquals ( expected, actual );" );
+			body.append ( newLine );
+		}
 		return body.toString();
 	}
 
@@ -496,15 +507,38 @@ public class GenerateTestsAction extends ActionBase {
 					declaration, parameterName, initialization);
 				sb.append(newLine);
 			}
+
 			sb.append("\t");
-			// TODO: generate one of:
-			// 1 - "className instanceOrClass = "
-			// 2 - "returnType actual = "
-			// ...if method returns something
-			// TODO: generate one of:
-			// 1 - new className
-			// 2 - instanceOrClass.methodName
-			sb.append("// TODO: prelude");
+			IType declaringType = method.getDeclaringType();
+			String className = declaringType.getElementName();
+			String returnType = method.getReturnType();
+			String instanceOrClass = 
+				Flags.isStatic(method.getFlags()) 
+				? className 
+				: determineInstanceVariableName(className);
+			String methodName = method.getElementName();
+			// assign result if necessary
+			if (method.isConstructor()) {
+				// generate "className instanceOrClass = "
+				appendFormat(sb, "{0} {1} = ", className, instanceOrClass);
+			}
+			// if method returns something...
+			else if (returnType != "V") {
+				// generate "returnType actual = "
+				String declaration = determineDeclarationForType(returnType);
+				appendFormat(sb, "{0} {1} = ", declaration, "actual");
+			}
+
+			// Make the call!
+			if (method.isConstructor()) {
+				// "new className"
+				appendFormat(sb, "new {0}", className);
+			}
+			else {
+				// "instanceOrClass.methodName"
+				appendFormat(sb, "{0}.{1}", instanceOrClass, methodName);
+			}
+
 			// generate argument/parameter list
 			sb.append(" ( ");
 			for (int i = 0; i < numberOfParameters; i++) {

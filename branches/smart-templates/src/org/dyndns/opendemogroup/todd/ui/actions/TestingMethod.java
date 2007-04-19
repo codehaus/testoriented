@@ -27,6 +27,7 @@ public class TestingMethod implements IMethod {
 	private List<String> parameterTypes = new ArrayList<String> ( );
 	private String returnType = "V"; // default to void
 	private int flags;
+	private IType declaringType = null; 
 
 	public String getElementName() {
 		return elementName;
@@ -126,7 +127,11 @@ public class TestingMethod implements IMethod {
 	}
 
 	public IType getDeclaringType() {
-		return null;
+		return declaringType;
+	}
+	
+	public void setDeclaringType ( IType value ) {
+		declaringType = value;
 	}
 
 	public int getFlags() throws JavaModelException {
