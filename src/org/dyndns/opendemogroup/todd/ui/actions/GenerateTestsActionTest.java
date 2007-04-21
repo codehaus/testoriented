@@ -29,8 +29,7 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 	 * {@link GenerateTestsAction#generateTestMethod(IMethod,String)}
 	 * that exercises the typical use.
 	 */
-	@Test
-	public void generateTestMethod_Typical ( ) {
+	@Test public void generateTestMethod_Typical ( ) {
 		TestingClass tc = new TestingClass ( );
 		tc.setElementName("Unformatter");
 
@@ -55,6 +54,53 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			" */{0}" +
 			"@Test public void unformat_TODO ( ) '{' {0}" +
 			"\tUnformatter unformatter = new Unformatter (  );{0}" +
+			"\tfail ( \"TODO: initialize variable(s) and expected value\" );{0}" +
+			"\tString format = \"TODO\";{0}" +
+			"\tString formatted = \"TODO\";{0}" +
+			"\tString[] actual = unformatter.unformat ( format, formatted );{0}" +
+			"\tString[] expected = new String[] '{' \"TODO\" };{0}" +
+			"\tassertEquals ( expected, actual );{0}" +
+			"}{0}" +
+			"";
+		String expected = 
+			MessageFormat.format( testMethodTemplate, newLine );
+		assertEquals(expected, actual);
+	}
+
+	/**
+	 * A <i>comprehensive</i> test of 
+	 * {@link GenerateTestsAction#generateTestMethod(IMethod,String)}
+	 * that exercises the case where the class under test does not explicitly
+	 * define a constructor.
+	 * 
+	 * Take note that this functionality is not quite implemented yet, so the
+	 * test only represents the current behaviour of the code, with the future
+	 * behaviour in a TODO comment and described here:
+	 * 1 - The implicit constructor should be called
+	 */
+	@Test public void generateTestMethod_NoExplicitConstructors ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+
+		// public String[] unformat ( String format, String formatted ) 
+		TestingMethod methodToTest = new TestingMethod ();
+		methodToTest.setElementName("unformat");
+		methodToTest.addParameter("format", QSTRING);
+		methodToTest.addParameter("formatted", QSTRING);
+		methodToTest.setReturnType("[" + QSTRING);
+		tc.addMethod(methodToTest);
+
+		String actual = generateTestMethod(methodToTest, tc);
+		String testMethodTemplate =
+			"{0}" +
+			"/**{0}" +
+			" * Tests the <i>unformat</i> method with {0}" +
+			" * TODO: write about scenario{0}" +
+			" */{0}" +
+			"@Test public void unformat_TODO ( ) '{' {0}" +
+			// TODO: "\tUnformatter unformatter = new Unformatter (  );{0}"
+			"\t// TODO: initialize instance{0}" +
+			"\tUnformatter unformatter = null;{0}" +
 			"\tfail ( \"TODO: initialize variable(s) and expected value\" );{0}" +
 			"\tString format = \"TODO\";{0}" +
 			"\tString formatted = \"TODO\";{0}" +
@@ -251,6 +297,24 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, no-argument method call.
+	 */
+	@Test public void generateCallStub_ZeroArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tunformatter.eat (  );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
 	 * a simple, one-argument method call.
 	 */
 	@Test public void generateCallStub_OneArgumentMethod ( ) {
@@ -260,6 +324,96 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 		tc.addMethod(tm);
 		String expectedTemplate = 
 			"\tString meat = \"TODO\";{0}" + 
+			"\tunformatter.eat ( meat );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, one-argument method call that is an Object.
+	 */
+	@Test public void generateCallStub_OneObjectArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tm.addParameter("meat", "QObject;");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tObject meat = null;{0}" + 
+			"\tunformatter.eat ( meat );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, one-argument method call that is an interface.
+	 */
+	@Test public void generateCallStub_OneInterfaceArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tm.addParameter("meat", "QIJavaElement;");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tIJavaElement meat = null;{0}" + 
+			"\tunformatter.eat ( meat );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, one-argument method call that is an instance of a class.
+	 */
+	@Test public void generateCallStub_OneClassArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tm.addParameter("meat", "QTestingMethod;");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tTestingMethod meat = null;{0}" + 
+			"\tunformatter.eat ( meat );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, one-argument method call that is an instance of a generic/typed
+	 * class.
+	 * 
+	 * Take note that this functionality is not quite implemented yet, so the
+	 * test only represents the current behaviour of the code, with the future
+	 * behaviours in TODO comments and described here:
+	 * 1 - The type of the variable should be List&lt;String&gt;.
+	 * 2 - Variables representing parameters that are class instances should
+	 * be initialized with a new instance, not just null.
+	 */
+	@Test public void generateCallStub_OneGenericArgumentMethod ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tm.addParameter("meat", "QList<QString;>;");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			// TODO: "\tList<String> meat = new ArrayList<String> (  );{0}" +
+			// TODO: "\tList<String> meat = null;{0}" +
+			"\tObject meat = null;{0}" +
 			"\tunformatter.eat ( meat );{0}";
 		String expected = 
 			MessageFormat.format( expectedTemplate, newLine );
@@ -290,6 +444,25 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 
 	/**
 	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, no-argument method call that returns a value.
+	 */
+	@Test public void generateCallStub_ZeroArgumentMethodWithReturn ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		TestingMethod tm = new TestingMethod ( );
+		tm.setElementName("eat");
+		tm.setReturnType("Z");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tboolean actual = unformatter.eat (  );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+	
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
 	 * a simple, two-argument method call that returns a value.
 	 */
 	@Test public void generateCallStub_TwoArgumentMethodWithReturn ( ) {
@@ -304,6 +477,28 @@ public class GenerateTestsActionTest extends GenerateTestsAction {
 			"\tString meat = \"TODO\";{0}" + 
 			"\tboolean veggies = false;{0}" + 
 			"\tString actual = unformatter.eat ( meat, veggies );{0}";
+		String expected = 
+			MessageFormat.format( expectedTemplate, newLine );
+		String actual = generateCallStub ( tm );
+		assertEquals(expected, actual); 
+	}
+	
+	/**
+	 * Tests the <i>generateCallStub</i> method with 
+	 * a simple, two-argument method call that returns an object instance.
+	 */
+	@Test public void generateCallStub_TwoArgumentMethodWithClassReturn ( ) {
+		TestingClass tc = new TestingClass ( );
+		tc.setElementName("Unformatter");
+		// it's really an extension/overload of the usual method
+		TestingMethod tm = createEatMeatMethod();
+		tm.addParameter("veggies", "Z"); // boolean
+		tm.setReturnType("Qjava.lang.Object;");
+		tc.addMethod(tm);
+		String expectedTemplate = 
+			"\tString meat = \"TODO\";{0}" + 
+			"\tboolean veggies = false;{0}" + 
+			"\tjava.lang.Object actual = unformatter.eat ( meat, veggies );{0}";
 		String expected = 
 			MessageFormat.format( expectedTemplate, newLine );
 		String actual = generateCallStub ( tm );
