@@ -28,6 +28,7 @@ import org.eclipse.ui.PartInitException;
 
 public class GenerateTestsAction extends ActionBase {
 
+	private static final String DECLARATION_AND_INITIALIZATION = "\t{0} {1} = {2};";
 	protected String newLine;
 	/**
 	 * Represents a mapping of single-character primitive type name
@@ -166,7 +167,8 @@ public class GenerateTestsAction extends ActionBase {
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
 		determineLineSeparator(testClass);
-		String contents = generateTestMethod ( method, testClass );
+		IType classUnderTest = method.getDeclaringType();
+		String contents = generateTestMethod ( method, classUnderTest );
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
@@ -392,12 +394,12 @@ public class GenerateTestsAction extends ActionBase {
 	 * <i>methodToTest</i>.
 	 * @param methodToTest The {@link IMethod} instance for which a test method
 	 * will be generated.
-	 * @param testClass The class in which this method is located.
+	 * @param classUnderTest The class in which the method to test is located.
 	 * @return A string representing the method to be added to the test fixture
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public String generateTestMethod(IMethod methodToTest, IType testClass) {
+	public String generateTestMethod(IMethod methodToTest, IType classUnderTest) {
 		// TODO: de-hardcode this method template for customization purposes
 		// TODO: Also generate a call to the method under test with
 		// auto-generated default values for its parameters.
@@ -411,7 +413,7 @@ public class GenerateTestsAction extends ActionBase {
 			"{2}" +
 			"}{1}" +
 			"";
-		String body = generateTestMethodBody(methodToTest, testClass);
+		String body = generateTestMethodBody(methodToTest, classUnderTest);
 		String contents = 
 			MessageFormat.format( testMethodTemplate, methodToTest.getElementName(), newLine, body );
 		return contents;
@@ -420,11 +422,14 @@ public class GenerateTestsAction extends ActionBase {
 	/**
 	 * Convenience method that takes care of setting up the test method stub's
 	 * body.
-	 * @param methodToTest
-	 * @param testClass
-	 * @return
+	 * @param methodToTest The {@link IMethod} instance for which a test method
+	 * will be generated.
+	 * @param classUnderTest The class in which the method to test is located.
+	 * @return A string representing the body of the method to be added to the
+	 * test fixture that will exercise <i>methodToTest</i> after the user fills
+	 * in a few TODOs.
 	 */
-	String generateTestMethodBody(IMethod methodToTest, IType testClass) {
+	String generateTestMethodBody(IMethod methodToTest, IType classUnderTest) {
 		int methodFlags = 0;
 		String returnType = "V";
 		try {
@@ -439,10 +444,23 @@ public class GenerateTestsAction extends ActionBase {
 
 		StringBuilder body = new StringBuilder ( );
 		if ( !Flags.isStatic(methodFlags) ) {
-			IMethod constructor = determinePreferredConstructor(testClass);
+			IMethod constructor = determinePreferredConstructor(classUnderTest);
 			if (constructor != null) {
 				String construction = generateCallStub(constructor);
 				body.append(construction);
+			}
+			else {
+				// We still need to generate an instance variable declaration
+				// and initialization, otherwise the code below won't compile
+				String className = classUnderTest.getElementName();
+				String instanceOrClass = determineInstanceVariableName(className);
+				body.append("\t// TODO: initialize instance");
+				body.append(newLine);
+
+				appendFormat(body, 
+					DECLARATION_AND_INITIALIZATION, 
+					className, instanceOrClass, "null");
+				body.append(newLine);
 			}
 		}
 		
@@ -503,11 +521,13 @@ public class GenerateTestsAction extends ActionBase {
 				String declaration = determineDeclarationForType(parameterType);
 				String initialization = determineInitializationForType(parameterType);
 				appendFormat(sb, 
-					"\t{0} {1} = {2};", 
+					DECLARATION_AND_INITIALIZATION, 
 					declaration, parameterName, initialization);
 				sb.append(newLine);
 			}
 
+			// TODO: Refactor the code below to use the 
+			// DECLARATION_AND_INITIALIZATION template instead
 			sb.append("\t");
 			IType declaringType = method.getDeclaringType();
 			String className = declaringType.getElementName();
@@ -613,6 +633,10 @@ public class GenerateTestsAction extends ActionBase {
 					}
 				}
 			}
+			// TODO: Issue 4: What if result is still null?  This situation
+			// happens when a source file does not declare a constructor and
+			// thus the default constructor is implicitly there, but not listed
+			// in "methods".
 		} catch (JavaModelException jme) {
 			// jme thrown if element does not exist (impossible) or if an
 			// exception occurs while accessing its corresponding resource.
@@ -633,7 +657,7 @@ public class GenerateTestsAction extends ActionBase {
 	String determineDeclarationForType ( String typeSignature ) {
 		char firstCharacter = typeSignature.charAt(0);
 		String rest = typeSignature.substring(1);
-		String result = "null";
+		String result = "Object";
 		switch ( firstCharacter ) {
 		case Signature.C_TYPE_VARIABLE:
 			// TODO: implement this possibility
@@ -681,7 +705,6 @@ public class GenerateTestsAction extends ActionBase {
 		String rest = typeSignature.substring(1);
 		String result = "null";
 		String typeName = null;
-		String defaultValue = null;
 		switch ( firstCharacter ) {
 		case Signature.C_TYPE_VARIABLE:
 			// TODO: implement this possibility
