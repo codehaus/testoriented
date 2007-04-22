@@ -1,6 +1,7 @@
 package org.dyndns.opendemogroup.todd.ui.actions;
 
 import java.text.MessageFormat;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.dyndns.opendemogroup.todd.SimpleSearchRequestor;
@@ -13,6 +14,7 @@ import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -26,6 +28,67 @@ import org.eclipse.ui.PartInitException;
 
 public class GenerateTestsAction extends ActionBase {
 
+	private static final String DECLARATION_AND_INITIALIZATION = "\t{0} {1} = {2};";
+	protected String newLine;
+	/**
+	 * Represents a mapping of single-character primitive type name
+	 * representations (as the TypeSignature) and sensible values for defaults
+	 * when initializing them. 
+	 */
+	private static Hashtable<Character, String> simpleTypeDefaultValues = null;
+	
+	/**
+	 * Represents a mapping of type names and sensible values for defaults
+	 * when initializing them. 
+	 */
+	private static Hashtable<String, String> complexTypeDefaultValues = null;
+
+	/**
+	 * Represents a mapping of single-character primitive type name
+	 * representations and their usual string representations in source code. 
+	 */
+	private static Hashtable<Character, String> simpleTypeByName = null;
+
+	public GenerateTestsAction ( ) {
+		super ( );
+		synchronized (GenerateTestsAction.class) {
+			// TODO: Eventually make these defaults configurable
+			if (null == simpleTypeDefaultValues) {
+				simpleTypeDefaultValues = new Hashtable<Character, String>();
+				simpleTypeDefaultValues.put(Signature.C_BYTE, "0");
+				simpleTypeDefaultValues.put(Signature.C_CHAR, "'x'");
+				simpleTypeDefaultValues.put(Signature.C_DOUBLE, "0.0");
+				simpleTypeDefaultValues.put(Signature.C_FLOAT, "0.0f");
+				simpleTypeDefaultValues.put(Signature.C_INT, "0");
+				simpleTypeDefaultValues.put(Signature.C_LONG, "0L");
+				simpleTypeDefaultValues.put(Signature.C_SHORT, "0");
+				simpleTypeDefaultValues.put(Signature.C_VOID, "null");
+				simpleTypeDefaultValues.put(Signature.C_BOOLEAN, "false");
+			}
+
+			// TODO: Eventually make these defaults configurable
+			if (null == complexTypeDefaultValues) {
+				complexTypeDefaultValues = new Hashtable<String, String>();
+				final String defaultString = "\"TODO\"";
+				complexTypeDefaultValues.put("java.lang.String", defaultString);
+				complexTypeDefaultValues.put("String", defaultString);
+			}
+
+			if (null == simpleTypeByName) {
+				simpleTypeByName = new Hashtable<Character, String>();
+				simpleTypeByName.put(Signature.C_BYTE, "byte");
+				simpleTypeByName.put(Signature.C_CHAR, "char");
+				simpleTypeByName.put(Signature.C_DOUBLE, "double");
+				simpleTypeByName.put(Signature.C_FLOAT, "float");
+				simpleTypeByName.put(Signature.C_INT, "int");
+				simpleTypeByName.put(Signature.C_LONG, "long");
+				simpleTypeByName.put(Signature.C_SHORT, "short");
+				simpleTypeByName.put(Signature.C_VOID, "void");
+				simpleTypeByName.put(Signature.C_BOOLEAN, "boolean");
+			}
+}		
+	}
+	
 	/**
 	 * Executes the action, if possible, on the provided {@link IType} instance.
 	 * @param potentialTypeToTest An {@link IType}, which may have originated
@@ -37,8 +100,6 @@ public class GenerateTestsAction extends ActionBase {
 		// transparently by generateTest if we invoke it on all of
 		// eachClass' methods, in a loop.
 		// TODO: determine if eachClass is abstract and react accordingly
-		// TODO: write a testcase class
-		// TODO: Consider invoking the current "New JUnit Test Case" wizard
 		IMethod[] methods = null;
 		try {
 			methods = potentialTypeToTest.getMethods();
@@ -73,10 +134,10 @@ public class GenerateTestsAction extends ActionBase {
 			return;
 		}
 		// TODO: move this check to selectionChanged if possible
-		if ( (flags & Flags.AccPrivate) != 0 ) {
+		if ( Flags.isPrivate(flags) ) {
 			// can't call private member!
 		}
-		else if ( (flags & Flags.AccProtected) != 0) {
+		else if ( Flags.isProtected(flags) ) {
 			// TODO: Also consider an abstract method
 			// TODO: write a test for method only if test class subclasses us
 		}
@@ -85,7 +146,6 @@ public class GenerateTestsAction extends ActionBase {
 		}
 	}
 
-	
 	/**
 	 * Given an {@link IMethod} instance, will attempt to generate a JUnit test
 	 * method for it in an appropriate associated test class.
@@ -104,8 +164,9 @@ public class GenerateTestsAction extends ActionBase {
 		// TODO: Search for a spot to insert the new test method:
 		// After last occurence of eachMethod.getName, or as the last method.
 		// TODO: Consider scanning for special comments delineating test regions
-		String newLine = determineLineSeparator(testClass);
-		String contents = generateTestMethodContents ( method, newLine );
+		determineLineSeparator(testClass);
+		IType classUnderTest = method.getDeclaringType();
+		String contents = generateTestMethod ( method, classUnderTest );
 		// Open an editor for testClass, so the user can see the
 		// newly-added method in context and then adjust it accordingly.
 		ICompilationUnit cu = testClass.getCompilationUnit();
@@ -145,15 +206,17 @@ public class GenerateTestsAction extends ActionBase {
 	/**
 	 * Attempts to determine the line separator character(s) for the supplied
 	 * <i>targetClass</i> with a default of whatever the platform's
-	 * <i>line.separator</i> property is.
+	 * <i>line.separator</i> property is.  The result is stored in the protected
+	 * field "newLine" for use by other methods in this class.
 	 * @param targetClass The {@link IType} instance for which the line
 	 * separator is to be determined. 
-	 * @return A string representing the character(s) to use between lines of
 	 * text.
 	 */
-	String determineLineSeparator(IType targetClass) {
+	void determineLineSeparator(IType targetClass) {
+		// TODO: Investigate using Util.getLineSeparator instead of
+		// (or in addition to) this code...
 		IOpenable openableTestClass = targetClass.getOpenable();
-		String newLine = System.getProperty("line.separator");
+		newLine = System.getProperty("line.separator");
 		try {
 			newLine = openableTestClass.findRecommendedLineSeparator();
 		} catch (JavaModelException jme) {
@@ -161,7 +224,6 @@ public class GenerateTestsAction extends ActionBase {
 			// and thus we ignore since we already have a reasonably sensible
 			// default value for newLine
 		}
-		return newLine;
 	}
 
 	/**
@@ -284,9 +346,9 @@ public class GenerateTestsAction extends ActionBase {
 		// JavaUI.createTypeDialog
 		String className = testedType.getElementName();
 		IPackageFragment parentPackage = testedType.getPackageFragment();
-		String newLine = determineLineSeparator(testedType);
+		determineLineSeparator(testedType);
 		String compilationUnitContents = 
-			generateCompilationUnitContents(parentPackage, newLine);
+			generateCompilationUnitContents(parentPackage);
 		// TODO: Parameterize the convention somehow (Strategy pattern?)
 		String testClassName = className + "Test";
 		ICompilationUnit associatedUnit = null;
@@ -304,13 +366,13 @@ public class GenerateTestsAction extends ActionBase {
 		}
 		IType associatedClass = null;
 		String classContents = 
-			generateTestClassContents(className, testClassName, newLine);
+			generateTestClassContents(className, testClassName);
 		try {
 			associatedClass = 
 				associatedUnit.createType(
-						classContents, 
-						null, 
-						true, 
+						classContents,
+						null,
+						true,
 						null);
 		} catch (JavaModelException jme) {
 			// jme thrown if sibling does not exist or is invalid (which is
@@ -330,17 +392,13 @@ public class GenerateTestsAction extends ActionBase {
 	 * <i>methodToTest</i>.
 	 * @param methodToTest The {@link IMethod} instance for which a test method
 	 * will be generated.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
+	 * @param classUnderTest The class in which the method to test is located.
 	 * @return A string representing the method to be added to the test fixture
 	 * that will exercise <i>methodToTest</i> after the user fills in a few
 	 * TODOs.
 	 */
-	public static String generateTestMethodContents(IMethod methodToTest, String newLine) {
-		String methodName = methodToTest.getElementName();
+	public String generateTestMethod(IMethod methodToTest, IType classUnderTest) {
 		// TODO: de-hardcode this method template for customization purposes
-		// TODO: Also generate a call to the method under test with
-		// auto-generated default values for its parameters.
 		String testMethodTemplate =
 			"{1}" +
 			"/**{1}" +
@@ -348,15 +406,434 @@ public class GenerateTestsAction extends ActionBase {
 			" * TODO: write about scenario{1}" +
 			" */{1}" +
 			"@Test public void {0}_TODO ( ) '{' {1}" +
-			"\t// TODO: invoke {0} and assert properties of its effects/output{1}" +
-			"\tfail ( \"Test not yet written\" ); {1}" +
+			"{2}" +
 			"}{1}" +
 			"";
+		String body = generateTestMethodBody(methodToTest, classUnderTest);
 		String contents = 
-			MessageFormat.format( testMethodTemplate, methodName, newLine );
+			MessageFormat.format( testMethodTemplate, methodToTest.getElementName(), newLine, body );
 		return contents;
 	}
 
+	/**
+	 * Convenience method that takes care of setting up the test method stub's
+	 * body.
+	 * @param methodToTest The {@link IMethod} instance for which a test method
+	 * will be generated.
+	 * @param classUnderTest The class in which the method to test is located.
+	 * @return A string representing the body of the method to be added to the
+	 * test fixture that will exercise <i>methodToTest</i> after the user fills
+	 * in a few TODOs.
+	 */
+	String generateTestMethodBody(IMethod methodToTest, IType classUnderTest) {
+		int methodFlags = 0;
+		String returnType = "V";
+		try {
+			methodFlags = methodToTest.getFlags();
+			returnType = methodToTest.getReturnType();
+		} catch (JavaModelException jme) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource, so
+			// let's ignore it for now and pretend it never happened, since we
+			// have reasonable defaults
+		}
+
+		StringBuilder body = new StringBuilder ( );
+		if ( !Flags.isStatic(methodFlags) ) {
+			IMethod constructor = determinePreferredConstructor(classUnderTest);
+			if (constructor != null) {
+				String construction = generateCallStub(constructor);
+				body.append(construction);
+			}
+			else {
+				// We still need to generate an instance variable declaration
+				// and initialization, otherwise the code below won't compile
+				String className = classUnderTest.getElementName();
+				String instanceOrClass = determineInstanceVariableName(className);
+				body.append("\t// TODO: initialize instance");
+				body.append(newLine);
+
+				appendFormat(body, 
+					DECLARATION_AND_INITIALIZATION, 
+					className, instanceOrClass, "null");
+				body.append(newLine);
+			}
+		}
+		
+		// TODO: I can actually find out how many variables/parameters there
+		// are, (if any!) so this message could be much more accurate...
+		body.append("\tfail ( \"TODO: initialize variable(s)");
+		if ( !returnType.equals("V") ) {
+			body.append(" and expected value");
+		}
+		body.append("\" );");
+		body.append(newLine);
+		// TODO: Issue 5: Keep track of generated variable names to avoid
+		// generating duplicates.
+		// TODO: Use something like:
+		// org.eclipse.jdt.core.NamingConventions.suggestLocalVariableNames
+		// ...if a parameter's name is not available or conflicts with an
+		// existing name in the current scope.
+		String methodCall = generateCallStub(methodToTest);
+		body.append(methodCall);
+		if ( !returnType.equals("V") ) {
+			// TODO: This code could eventually be generated using
+			// generateCallStub to take advantage of its features...
+			String declaration = determineDeclarationForType(returnType);
+			String initialization = determineInitializationForType(returnType);
+			appendFormat(body, "\t{0} expected = {1};{2}", 
+					declaration, initialization, newLine);
+			body.append ( "\tassertEquals ( expected, actual );" );
+			body.append ( newLine );
+		}
+		return body.toString();
+	}
+
+	/**
+	 * <p>
+	 * Given a method, will generate some code that declares and initializes
+	 * variables corresponding to the method's parameters (if any) and then
+	 * calls the method.
+	 * </p>
+	 * <p>
+	 * This will work with methods that represent constructors, too.  In that
+	 * case, a new instance of the type in which the constructor method is found
+	 * will be created.
+	 * </p>
+	 * @param method The method for which to generate code that calls it.
+	 * @return A string representation of the code necessary to call the method
+	 * and any supporting code necessary to initialize variables matching the
+	 * method's parameters.
+	 */
+	String generateCallStub(IMethod method) {
+		// TODO: if the method returns something, allow the user to provide
+		// a name for that variable.
+		StringBuilder sb = new StringBuilder ( );
+		int numberOfParameters = method.getNumberOfParameters();
+		String methodCall = null;
+		try {
+			String[] parameterNames = method.getParameterNames();
+			String[] parameterTypes = method.getParameterTypes();
+			// generate parameter variable initialization(s)
+			for (int i = 0; i < numberOfParameters; i++) {
+				String parameterName = parameterNames[i];
+				String parameterType = parameterTypes[i];
+				String declaration = determineDeclarationForType(parameterType);
+				String initialization = determineInitializationForType(parameterType);
+				appendFormat(sb, 
+					DECLARATION_AND_INITIALIZATION, 
+					declaration, parameterName, initialization);
+				sb.append(newLine);
+			}
+
+			// TODO: Refactor the code below to use the 
+			// DECLARATION_AND_INITIALIZATION template instead
+			sb.append("\t");
+			IType declaringType = method.getDeclaringType();
+			String className = declaringType.getElementName();
+			String returnType = method.getReturnType();
+			String instanceOrClass = 
+				Flags.isStatic(method.getFlags()) 
+				? className 
+				: determineInstanceVariableName(className);
+			String methodName = method.getElementName();
+			// assign result if necessary
+			if (method.isConstructor()) {
+				// generate "className instanceOrClass = "
+				appendFormat(sb, "{0} {1} = ", className, instanceOrClass);
+			}
+			// if method returns something...
+			else if ( !returnType.equals("V") ) {
+				// generate "returnType actual = "
+				String declaration = determineDeclarationForType(returnType);
+				appendFormat(sb, "{0} {1} = ", declaration, "actual");
+			}
+
+			// Make the call!
+			if (method.isConstructor()) {
+				// "new className"
+				appendFormat(sb, "new {0}", className);
+			}
+			else {
+				// "instanceOrClass.methodName"
+				appendFormat(sb, "{0}.{1}", instanceOrClass, methodName);
+			}
+
+			// generate argument/parameter list
+			sb.append(" ( ");
+			for (int i = 0; i < numberOfParameters; i++) {
+				String parameterName = parameterNames[i];
+				if ( i > 0 ) {
+					sb.append(", ");
+				}
+				sb.append(parameterName);
+			}
+			sb.append(" );");
+			sb.append(newLine);
+			methodCall = sb.toString();
+		} catch (JavaModelException e) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource,
+			// which means we weren't able to generate a method call
+		}		
+		return methodCall;
+	}
+
+	/**								
+	 * Scans the provided <i>testClass</i>'s methods to find accessible
+	 * constructors and then narrows the list to the most desirable/preferable. 
+	 * @param testClass The IType instance for which to scan the methods.
+	 * @return An IMethod from the IType which represents the best constructor
+	 * to call, if one is available; null otherwise.
+	 */
+	static IMethod determinePreferredConstructor(IType testClass) {
+		IMethod result = null;
+		IMethod[] methods = null;
+		// TODO: What if all constructors are private/protected?  That might
+		// mean we have a singleton with an "Instance" or other factory
+		// method that creates instances for us.
+		// TODO: What if the best constructor is recursive? For example:
+		// Node ( Node parent )
+		// ...although parent could probably be null in this case...
+		// TODO: What happens if the class is abstract?  How about we
+		// assume (detect) that there will be some subclasses of this test
+		// class for all implementations (and even create one if none exist)
+		// and delegate the initialization to subclasses by making ourselves
+		// abstract as well? (we'd have to be careful not to fight the user
+		// while doing this)
+		// TODO: Provide a means for configuring an override for user-preferred
+		// constructors, which could be recognizable by an annotation.
+		try {
+			methods = testClass.getMethods();
+			if ( methods != null && methods.length > 0 ) {
+				// let's do this like a contest: the better of every pair of
+				// constructors is kept, unless it's the first one we find...
+				for (int i = 0; i < methods.length; i++) {
+					IMethod method = methods[i];
+					int flags = method.getFlags();
+					// non-static, non-private and non-protected constructors
+					if ( method.isConstructor() 
+							&& !Flags.isStatic(flags) 
+							&& !Flags.isPrivate(flags)
+							&& !Flags.isProtected(flags) ) {
+						if (null == result) {
+							result = method;
+						}
+						else {
+							// is _method_ better than _result_?
+							// TODO: Improve the meaning of "better", because in
+							// this case, there is "another kind of better". For
+							// example, maybe we should avoid recursive
+							// constructors, deprecated ones, etc.
+							if ( method.getNumberOfParameters() 
+									< result.getNumberOfParameters() ) {
+								result = method;
+							}
+						}
+					}
+				}
+			}
+			// TODO: Issue 4: What if result is still null?  This situation
+			// happens when a source file does not declare a constructor and
+			// thus the default constructor is implicitly there, but not listed
+			// in "methods".
+		} catch (JavaModelException jme) {
+			// jme thrown if element does not exist (impossible) or if an
+			// exception occurs while accessing its corresponding resource.
+			// I'll just go ahead and ignore this for now...
+		}
+
+		return result;
+	}
+
+	/**
+	 * Given a string representation of a type signature, parses it and attempts
+	 * to reconstruct what the declaration would have looked like in source
+	 * code before it was converted into a signature.
+	 * @param typeSignature A string representation of a type's signature.
+	 * @return A string representation of the source code that likely produced
+	 * the signature.
+	 */
+	String determineDeclarationForType ( String typeSignature ) {
+		char firstCharacter = typeSignature.charAt(0);
+		String rest = typeSignature.substring(1);
+		String result = "Object";
+		switch ( firstCharacter ) {
+		case Signature.C_TYPE_VARIABLE:
+			// TODO: Issue 6: implement this possibility
+			break;
+		case Signature.C_ARRAY:
+			result = determineDeclarationForType(rest) + "[]";
+			break;
+		case Signature.C_CAPTURE:
+			// TODO: Issue 6: implement this possibility
+			break;
+		case Signature.C_RESOLVED:
+		case Signature.C_UNRESOLVED:
+			// TODO: add support for common simplifications, such as:
+			// java.lang.String -> String
+			// java.lang.Object -> Object
+			if ( rest.contains( "<" ) ) {
+				// TODO: Issue 6: Add support for type arguments
+			}
+			else {
+				// just grab rest minus the last character, which should be ';'
+				if (rest.endsWith(";")) {
+					result = rest.substring(0, rest.length() - 1);
+				}				
+			}
+			break;
+		default:	// all others - they are simple types
+			if ( simpleTypeByName.containsKey(firstCharacter) ) {
+				result = simpleTypeByName.get(firstCharacter);
+			}
+			break;
+		}
+		return result;
+	}
+	
+	/**
+	 * When calling a method or a constructor, arguments must be provided values
+	 * that match their type.  This method decodes the provided
+	 * <i>typeSignature</i> and returns the string representation of a sensible
+	 * default value with which to initialize a variable/parameter of that type.
+	 * @param typeSignature
+	 * @return
+	 */
+	String determineInitializationForType ( String typeSignature ) {
+		char firstCharacter = typeSignature.charAt(0);
+		String rest = typeSignature.substring(1);
+		String result = "null";
+		String typeName = null;
+		switch ( firstCharacter ) {
+		case Signature.C_TYPE_VARIABLE:
+			// TODO: Issue 6: implement this possibility
+			break;
+		case Signature.C_ARRAY:
+			result = determineInitializationForArray(typeSignature, rest);
+			break;
+		case Signature.C_CAPTURE:
+			// TODO: Issue 6: implement this possibility
+			break;
+		case Signature.C_RESOLVED:
+		case Signature.C_UNRESOLVED:
+			if ( rest.contains( "<" ) ) {
+				// TODO: Issue 6: Add support for type arguments
+			}
+			else {
+				// TODO: Issue 6: Handle nested types
+				// (such as java.util.Map<K,V>.Entry<K,V>)
+
+				// just grab rest minus the last character, which should be ';'
+				if (rest.endsWith(";")) {
+					typeName = rest.substring(0, rest.length() - 1);
+				}
+				// then see if there's a pre-defined default
+				if ( complexTypeDefaultValues.containsKey(typeName) ) {
+					result = complexTypeDefaultValues.get(typeName);
+				}
+				else {
+					// TODO: Issue 7: call a constructor if possible
+				}
+			}
+			break;
+		default:	// all others - they are simple types
+			if ( simpleTypeDefaultValues.containsKey(firstCharacter) ) {
+				result = simpleTypeDefaultValues.get(firstCharacter);
+			}
+			break;
+		}
+		return result;
+	}
+
+	/**
+	 * Given that we know the <i>typeSignature</i> to represent an array,
+	 * construct a string representing the initialization of the array type
+	 * represented by the signature.
+	 * @param typeSignature
+	 * @param rest The <i>typeSignature</i> minus its first character.
+	 * @return A string representing the initialization of the type represented
+	 * by <i>typeSignature</i>.
+	 */
+	private String determineInitializationForArray(String typeSignature, String rest) {
+		String result;
+		String typeName = determineDeclarationForType ( typeSignature );
+		int braceCount = 1;
+		int index;
+		// TODO: In theory, the grammar could allow the sequence "[![",
+		// but this loop won't handle it.  Although, is that even a valid
+		// signature???  What should happen if we hit an invalid signature??
+		for (index = 0; index < rest.length ( ); index++) {
+			char c = rest.charAt(index);
+			if ( Signature.C_ARRAY == c ) {
+				braceCount++;
+			}
+			else {
+				break;
+			}
+		}
+		// rest is whatever is after all those '[' (which index points to) 
+		rest = rest.substring(index);
+		String defaultValue = determineInitializationForType(rest);
+		StringBuffer sb = new StringBuffer ( );
+		sb.append( "new " );
+		sb.append(typeName);
+		sb.append( " " );
+		for ( int c = 0; c < braceCount; c++ ) {
+			sb.append("{ ");
+		}
+		sb.append(defaultValue);
+		for ( int c = 0; c < braceCount; c++ ) {
+			sb.append(" }");
+		}
+		result = sb.toString();
+		return result;
+	}
+
+	/**
+	 * Given the name of a class, attempts to create a suitable name for an
+	 * instance variable in which an instance of said class could be assigned.
+	 * @param className The name of a class.
+	 * @return The name of a variable.
+	 */
+	static String determineInstanceVariableName ( String className ) {
+		// TODO: Investigate the use of the 
+		// org.eclipse.jdt.internal.core.InternalNamingConventions
+		// class' suggestLocalVariableNames method, since it has support for
+		// exclusions (to prevent collisions), project pre- and suf- fixes, etc.
+		
+		// TODO: Handle nested classes (such as Map<K,V>.Entry<K,V>) and
+		// qualified names (such as java.lang.String)
+
+		String result = "instance"; // default value
+
+		char firstCharacter = className.charAt(0);
+		// if className starts with an uppercase letter...
+		if ( Character.isUpperCase( firstCharacter ) ) {
+			// lowercase it and append it to the rest
+			result = Character.toLowerCase(firstCharacter) 
+					+ className.substring(1);
+			// TODO: if that name is already taken and there's another
+			// uppercase letter in the className, try to form a variable name
+			// using such successive "words" until all remaining splits have
+			// been exhausted.
+		}
+
+		return result;
+	}
+	
+	/**
+	 * Convenience method to emulate a method of the same name in .NET's
+	 * StringBuilder class.
+	 * @param target
+	 * @param pattern
+	 * @param arguments
+	 */
+	private static void appendFormat ( StringBuilder target, String pattern, Object... arguments ) {
+		String result = MessageFormat.format(pattern, arguments);
+		target.append(result);
+	}
+	
 	/**
 	 * Generates a string representation of a JUnit 4 test class, which will
 	 * host tests for the class <i>className</i> and be called
@@ -364,12 +841,10 @@ public class GenerateTestsAction extends ActionBase {
 	 * @param className The name of the class to test.
 	 * @param testClassName The name of the test class, which will contain tests
 	 * for the class called <i>className</i>.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
 	 * @return A string representing a class declaration for JUnit testing
 	 * purposes.
 	 */
-	public static String generateTestClassContents(String className, String testClassName, String newLine) {
+	public String generateTestClassContents(String className, String testClassName) {
 		// TODO: In some cases, it may be desirable to have testClass derive
 		// from class, so that protected methods can be exercised.
 		// TODO: de-hardcode this class declaration template for customization
@@ -396,12 +871,10 @@ public class GenerateTestsAction extends ActionBase {
 	 * a JUnit 4 test class.
 	 * @param parentPackage The {@link IPackageFragment} in which the class to
 	 * be tested resides in.
-	 * @param newLine The character or character sequence to use as a line
-	 * separator in code.
 	 * @return A string representing a compilation unit in which a test fixture
 	 * class will be added.
 	 */
-	public static String generateCompilationUnitContents(IPackageFragment parentPackage, String newLine) {
+	public String generateCompilationUnitContents(IPackageFragment parentPackage) {
 		// TODO: de-hardcode this compilation unit template for customization
 		// purposes, or at least initialize it from Eclipse's set of templates
 		String compilationUnitTemplate = 
