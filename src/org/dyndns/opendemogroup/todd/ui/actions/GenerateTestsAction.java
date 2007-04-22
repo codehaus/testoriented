@@ -100,8 +100,6 @@ public class GenerateTestsAction extends ActionBase {
 		// transparently by generateTest if we invoke it on all of
 		// eachClass' methods, in a loop.
 		// TODO: determine if eachClass is abstract and react accordingly
-		// TODO: write a testcase class
-		// TODO: Consider invoking the current "New JUnit Test Case" wizard
 		IMethod[] methods = null;
 		try {
 			methods = potentialTypeToTest.getMethods();
@@ -401,8 +399,6 @@ public class GenerateTestsAction extends ActionBase {
 	 */
 	public String generateTestMethod(IMethod methodToTest, IType classUnderTest) {
 		// TODO: de-hardcode this method template for customization purposes
-		// TODO: Also generate a call to the method under test with
-		// auto-generated default values for its parameters.
 		String testMethodTemplate =
 			"{1}" +
 			"/**{1}" +
@@ -467,18 +463,22 @@ public class GenerateTestsAction extends ActionBase {
 		// TODO: I can actually find out how many variables/parameters there
 		// are, (if any!) so this message could be much more accurate...
 		body.append("\tfail ( \"TODO: initialize variable(s)");
-		if (returnType != "V") {
+		if ( !returnType.equals("V") ) {
 			body.append(" and expected value");
 		}
 		body.append("\" );");
 		body.append(newLine);
+		// TODO: Issue 5: Keep track of generated variable names to avoid
+		// generating duplicates.
 		// TODO: Use something like:
 		// org.eclipse.jdt.core.NamingConventions.suggestLocalVariableNames
 		// ...if a parameter's name is not available or conflicts with an
 		// existing name in the current scope.
 		String methodCall = generateCallStub(methodToTest);
 		body.append(methodCall);
-		if ( returnType != "V" ) {
+		if ( !returnType.equals("V") ) {
+			// TODO: This code could eventually be generated using
+			// generateCallStub to take advantage of its features...
 			String declaration = determineDeclarationForType(returnType);
 			String initialization = determineInitializationForType(returnType);
 			appendFormat(body, "\t{0} expected = {1};{2}", 
@@ -543,7 +543,7 @@ public class GenerateTestsAction extends ActionBase {
 				appendFormat(sb, "{0} {1} = ", className, instanceOrClass);
 			}
 			// if method returns something...
-			else if (returnType != "V") {
+			else if ( !returnType.equals("V") ) {
 				// generate "returnType actual = "
 				String declaration = determineDeclarationForType(returnType);
 				appendFormat(sb, "{0} {1} = ", declaration, "actual");
@@ -660,13 +660,13 @@ public class GenerateTestsAction extends ActionBase {
 		String result = "Object";
 		switch ( firstCharacter ) {
 		case Signature.C_TYPE_VARIABLE:
-			// TODO: implement this possibility
+			// TODO: Issue 6: implement this possibility
 			break;
 		case Signature.C_ARRAY:
 			result = determineDeclarationForType(rest) + "[]";
 			break;
 		case Signature.C_CAPTURE:
-			// TODO: implement this possibility
+			// TODO: Issue 6: implement this possibility
 			break;
 		case Signature.C_RESOLVED:
 		case Signature.C_UNRESOLVED:
@@ -674,7 +674,7 @@ public class GenerateTestsAction extends ActionBase {
 			// java.lang.String -> String
 			// java.lang.Object -> Object
 			if ( rest.contains( "<" ) ) {
-				// TODO: Add support for type arguments
+				// TODO: Issue 6: Add support for type arguments
 			}
 			else {
 				// just grab rest minus the last character, which should be ';'
@@ -707,21 +707,21 @@ public class GenerateTestsAction extends ActionBase {
 		String typeName = null;
 		switch ( firstCharacter ) {
 		case Signature.C_TYPE_VARIABLE:
-			// TODO: implement this possibility
+			// TODO: Issue 6: implement this possibility
 			break;
 		case Signature.C_ARRAY:
 			result = determineInitializationForArray(typeSignature, rest);
 			break;
 		case Signature.C_CAPTURE:
-			// TODO: implement this possibility
+			// TODO: Issue 6: implement this possibility
 			break;
 		case Signature.C_RESOLVED:
 		case Signature.C_UNRESOLVED:
 			if ( rest.contains( "<" ) ) {
-				// TODO: Add support for type arguments
+				// TODO: Issue 6: Add support for type arguments
 			}
 			else {
-				// TODO: Handle nested types
+				// TODO: Issue 6: Handle nested types
 				// (such as java.util.Map<K,V>.Entry<K,V>)
 
 				// just grab rest minus the last character, which should be ';'
@@ -733,7 +733,7 @@ public class GenerateTestsAction extends ActionBase {
 					result = complexTypeDefaultValues.get(typeName);
 				}
 				else {
-					// TODO: call a constructor if possible
+					// TODO: Issue 7: call a constructor if possible
 				}
 			}
 			break;
