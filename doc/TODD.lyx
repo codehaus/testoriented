@@ -1,0 +1,3016 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass IEEEtran
+\language english
+\inputencoding default
+\fontscheme default
+\graphics default
+\float_placement hbt
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+T.O.D.D.: Test-Oriented Development and Debugging (December 2006)
+\layout Author
+
+Olivier A.
+ Dagenais
+\begin_inset Foot
+collapsed false
+
+\layout Standard
+
+O.
+ A.
+ Dagenais is a M.C.S.
+ student at Carleton University, Ottawa, ON K1S 5B6 Canada (e-mail: olivier
+ dot dagenais at gmail dot com)
+\end_inset 
+
+
+\layout Abstract
+
+The benefits of Test-Driven Development (TDD) can be appealing to many seeking
+ to reduce the amount of time spent on a software project, but not all projects
+ can implement the TDD methodology fully.
+ A technique similar to TDD -- test-oriented development -- is introduced
+ and a prototype software implementation in the form of an Eclipse plug-in
+ is presented to support the adoption of this more pragmatic approach so
+ that it can help write high quality software.
+\layout Keywords
+
+automation, programming, software debugging, software testing
+\layout MarkBoth
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}{
+\end_inset 
+
+and this is for right pages
+\layout Section
+
+Introduction
+\layout Standard
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+PARstart{A}{lthough}
+\end_inset 
+
+ writing quality software on schedule and under budget is difficult, modern
+ software development tools try to reduce the 
+\begin_inset Quotes eld
+\end_inset 
+
+accidental difficulties
+\begin_inset Quotes erd
+\end_inset 
+
+ surrounding software project development so that contributors can focus
+ on the projects' 
+\begin_inset Quotes eld
+\end_inset 
+
+essential difficulties
+\begin_inset Quotes erd
+\end_inset 
+
+ 
+\begin_inset LatexCommand \cite{Brooks1987}
+
+\end_inset 
+
+.
+ Two such advancements are xUnit, the family of 
+\begin_inset Quotes eld
+\end_inset 
+
+code-driven testing frameworks
+\begin_inset Quotes erd
+\end_inset 
+
+ 
+\begin_inset LatexCommand \cite{wiki:xunit}
+
+\end_inset 
+
+ and its companion methodology, Test-Driven Development (TDD) 
+\begin_inset LatexCommand \cite{wiki:tdd}
+
+\end_inset 
+
+.
+\layout Subsection
+
+Problem
+\layout Standard
+
+The TDD process involves programmers writing unit tests first, then writing
+ just enough code to make the new tests pass, usually one test at a time.
+ While this is a noble goal, software developers do not always have the
+ luxury to write tests first, due to business pressures or project constraints,
+ for example.
+ A more pragmatic approach of on-demand testing -- such as writing tests
+ when an implementation is not straightforward or has potential side-effects
+ -- can be adopted and consequently tests are written at about the same
+ time as the code being tested, if not after.
+ Unlike TDD, the tests in this case are not 
+\emph on 
+driving
+\emph default 
+ the development but still support it to a lesser extent and therefore the
+ development is said to be 
+\emph on 
+test-oriented
+\emph default 
+.
+ Less code might be tested as a result, but that is the trade-off.
+\layout Standard
+
+Some automation facilities are provided by modern Integrated Development
+ Environments (IDE) to support the 
+\begin_inset Quotes eld
+\end_inset 
+
+pure
+\begin_inset Quotes erd
+\end_inset 
+
+ test-driven approach.
+ For example, both the Java Development Tools (JDT) 
+\begin_inset LatexCommand \cite{JDT}
+
+\end_inset 
+
+ of the Eclipse platform 
+\begin_inset LatexCommand \cite{EclipseFaq2006}
+
+\end_inset 
+
+ and Microsoft's Visual Studio 
+\begin_inset LatexCommand \cite{MsVs}
+
+\end_inset 
+
+ can offer to create a method stub for a new method whose interface was
+ defined through the first instance of its use.
+ There is, however, no facility in Eclipse to support the test-oriented
+ development approach of creating a test method stub for a method currently
+ under consideration.
+ To be clear, while Eclipse offers a 
+\begin_inset Quotes eld
+\end_inset 
+
+new JUnit Test Case
+\begin_inset Quotes erd
+\end_inset 
+
+ wizard which will generate a new associated test class (ATC) containing
+ a test method stub for each of the methods of the class under test (CUT),
+ this wizard does not support updating an existing ATC with new tests.
+\layout Subsection
+
+Motivation
+\layout Standard
+
+This project's implementation is focused on the JUnit 
+\begin_inset LatexCommand \cite{JUnit}
+
+\end_inset 
+
+ integration with the JDT of the Eclipse platform due to the general availabilit
+y of the software and its source code as well as its extensibility features.
+ Other software development environments could most likely have been used
+ and thus the general design and user interface elements could possibly
+ be applied to tools such as Microsoft's Visual Studio and the TestDriven.NET
+ (TDN) add-in 
+\begin_inset LatexCommand \cite{Cansdale}
+
+\end_inset 
+
+ that provides integration with NUnit 
+\begin_inset LatexCommand \cite{NUnit}
+
+\end_inset 
+
+.
+\layout Standard
+
+Because it is regarded as a beneficial practice toward increasing the quality
+ of code, TDD adoption should be promoted to Eclipse JDT users.
+ A potentially good way to do so would be to add some capabilities to the
+ JDT that encourage and facilitate the addition of unit tests beyond what
+ is currently available as of this writing, as a stepping stone toward tested
+ software and potentially toward TDD.
+ The idea, therefore, is to allow TDD to be introduced progressively into
+ software projects, so as to adversely impact them as little as possible.
+\layout Standard
+
+Unit tests are usually written in a separate class than the CUT, and as
+ such, templates are insufficient because they traditionally operate only
+ locally (i.e.
+ in the current editor) or without context.
+ The tool would need to be aware of the unit testing framework and associated
+ conventions, thus replacing the need for the programmers to remember that
+ information and potentially introduce inconsistencies every time they write
+ tests.
+ Such a tool could prevent the writing of unit tests from disrupting the
+ 
+\begin_inset Quotes eld
+\end_inset 
+
+flow
+\begin_inset Quotes erd
+\end_inset 
+
+ 
+\begin_inset LatexCommand \cite{Spolsky:Ideas}
+
+\end_inset 
+
+ of programmers so they can better focus on the task at hand, rather than
+ on manual and repetitive tasks.
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:Goals}
+
+\end_inset 
+
+Goals
+\layout Standard
+
+The goals of this project are to lower the barrier of entry and speed up
+ the writing of unit tests such that more -- and better -- unit tests can
+ be written than otherwise would be, and to help enforce a convention on
+ said unit tests.
+\layout Standard
+
+These goals are to be validated according to the following metrics:
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{Goal:Write a test for a method}
+
+\end_inset 
+
+Number of steps necessary to write a test for a method
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{Goal:Write a set of tests for a method}
+
+\end_inset 
+
+Number of steps necessary to write a set of tests for a method
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{Goal:Write a set of tests for a class}
+
+\end_inset 
+
+Number of steps necessary to write a set of tests for a class
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{Goal:Launch a single test}
+
+\end_inset 
+
+Number of steps necessary to launch a single test for running or debugging
+\layout Subsection
+
+Objectives
+\layout Standard
+
+To meet the project's goals, the following features will be added to the
+ Eclipse JDT:
+\layout Enumerate
+
+A context menu entry for the Java editor that allows the user to:
+\begin_deeper 
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{createMethodStub}
+
+\end_inset 
+
+Create a JUnit test method stub in the associated JUnit TestCase class for
+ the method in which the cursor is currently located
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{createTestFixture}
+
+\end_inset 
+
+Create a JUnit test case class (test fixture) for the class in which the
+ cursor is currently located.
+ The current wizard will most likely be invoked with a few values initialized
+ from the current context.
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{runTestMethod}
+
+\end_inset 
+
+Run the JUnit test method in which the cursor is currently located
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{debugTestMethod}
+
+\end_inset 
+
+Debug the JUnit test method in which the cursor is currently located
+\end_deeper 
+\layout Enumerate
+
+A context menu entry for the Java Outline that provides equivalent functionality
+ to 
+\begin_inset LatexCommand \ref{createMethodStub}
+
+\end_inset 
+
+ and 
+\begin_inset LatexCommand \ref{createTestFixture}
+
+\end_inset 
+
+
+\begin_deeper 
+\layout Enumerate
+
+Note: The equivalent functionality to 
+\begin_inset LatexCommand \ref{runTestMethod}
+
+\end_inset 
+
+ and 
+\begin_inset LatexCommand \ref{debugTestMethod}
+
+\end_inset 
+
+ are already implemented
+\end_deeper 
+\layout Subsection
+
+Outline
+\layout Standard
+
+This paper will first cover some background and related work, followed by
+ an account of the approach and design used.
+ Results will then be presented, including an evaluation against the metrics
+ identified earlier and a short conclusion will close with ideas for future
+ work.
+\layout Section
+
+Background
+\layout Quote
+
+Eclipse is an open source community whose projects are focused on building
+ an extensible development platform, runtimes and application frameworks
+ for building, deploying and managing software across the entire software
+ lifecycle 
+\begin_inset LatexCommand \cite{EclipseFaq2006}
+
+\end_inset 
+
+.
+\layout Quote
+
+The JDT project provides the tool plug-ins that implement a Java IDE supporting
+ the development of any Java application, including Eclipse plug-ins 
+\begin_inset LatexCommand \cite{JDT}
+
+\end_inset 
+
+.
+\layout Standard
+
+This work was partially inspired by TDN, a software extension to Visual
+ Studio which adds some capabilities to support TDD.
+ Among its actions, it features a method-level unit test invocation mechanism
+ from the text-editor, which Eclipse does not have.
+ Through some experimental work 
+\begin_inset LatexCommand \cite{Dagenais2006}
+
+\end_inset 
+
+, TDN was extended to provide rudimentary test class and method generation,
+ but that functionality was not very well integrated and the project was
+ eventually abandoned due to lack of time.
+\layout Subsection
+
+Related Work
+\layout Standard
+
+It is already possible to generate a JUnit test class that will test an
+ existing class through Eclipse's 
+\begin_inset Quotes eld
+\end_inset 
+
+new JUnit Test Case
+\begin_inset Quotes erd
+\end_inset 
+
+ wizard, but it is not possible to use this wizard to augment an existing
+ ATC with new methods.
+ Another observation that leads this author to conclude that the wizard
+ was most likely intended to be used in a 
+\begin_inset Quotes eld
+\end_inset 
+
+test very last
+\begin_inset Quotes erd
+\end_inset 
+
+ fashion is the class name that said wizard suggests: the name of the CUT
+ suffixed with 
+\noun on 
+Test
+\noun default 
+.
+ Because this appears to be the convention for JUnit, it seems to indicate
+ that adding a new JUnit test class for every new set of tests against the
+ CUT is not the intended use scenario.
+\layout Standard
+
+Some context menu items for launching tests (in either debug or run mode)
+ are currently contributed by the JDT to the text editor, but only at the
+ class level.
+ On the other hand, it is possible to launch tests at the method level from
+ within the Outline view or the Package Explorer.
+ This is puzzling because the Outline view already highlights the method
+ closest to the cursor in a Java editor and thus the user expectation is
+ that some part of the text editor must already know what the currently-selected
+ method is, yet does not use that information to launch unit tests.
+\layout Standard
+
+The JDT also feature some code templates that can be inserted by means of
+ the 
+\begin_inset Quotes eld
+\end_inset 
+
+Content Assist
+\begin_inset Quotes erd
+\end_inset 
+
+ functionality, but only at the cursor's current location.
+\layout Standard
+
+Some editions of Microsoft's Visual Studio apparently provide functionality
+ similar to that proposed here, from a context menu in the source code editor
+ 
+\begin_inset LatexCommand \cite{Dockendorf}
+
+\end_inset 
+
+.
+ A thorough comparison was made difficult due to its prohibitive price.
+\layout Section
+
+
+\begin_inset LatexCommand \label{sec:Approach}
+
+\end_inset 
+
+Approach
+\layout Standard
+
+The preferred approach for adding features to Eclipse is to contribute some
+ extensions to existing extension points and, if possible, contribute new
+ extension points so that others may do the same.
+ Although much of the functionality sought by this project is likely to
+ already be provided by code inside existing plug-ins -- and thus extensions
+ could have been contributed from them -- a new, standalone plug-in was
+ instead created to clearly show the contributions involved.
+ This was done, however, at the expense of violating encapsulation in some
+ cases and possibly duplicating some code in others.
+\layout Standard
+
+Due to the author's experience with Visual Studio and his relative inexperience
+ with Eclipse (similarly for their respective extensions and extension mechanism
+s), the new features were designed to be exposed in context menus, as with
+ the TDN add-in.
+ The context menus' new actions were expected to consist mostly of 
+\begin_inset Quotes eld
+\end_inset 
+
+glue code
+\begin_inset Quotes erd
+\end_inset 
+
+ connecting the JDT with JUnit launching as well as with smart templating
+ capabilities that write test method stubs.
+\layout Subsection
+
+Design
+\layout Standard
+
+The software's design was kept as simple and straightforward as possible
+ by minimizing the number of indirections and abstractions.
+ It is only near the end of the implementation that some minor abstractions
+ were introduced to facilitate code re-use by similar classes.
+ The class diagram featured in Fig.
+\begin_inset LatexCommand \ref{UML class diagram}
+
+\end_inset 
+
+ includes only the major classes.
+ All classes written for this project are discussed briefly in this section,
+ followed by an account of how the Eclipse extensions were used.
+\layout Standard
+
+
+\begin_inset Float figure
+placement t
+wide true
+collapsed false
+
+\layout Standard
+
+
+\begin_inset Graphics
+	filename Actions Class Diagram.png
+	width 7in
+	keepAspectRatio
+
+\end_inset 
+
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{UML class diagram}
+
+\end_inset 
+
+A UML class diagram showing the relationships between the 5 major classes.
+\end_inset 
+
+
+\layout Subsubsection
+
+
+\noun on 
+ActionBase
+\layout Standard
+
+The 
+\noun on 
+ActionBase
+\noun default 
+ class implements the 
+\noun on 
+IObjectActionDelegate
+\noun default 
+ and 
+\noun on 
+IEditorActionDelegate
+\noun default 
+ interfaces, which allows it to make contributions to the 
+\noun on 
+org.eclipse.ui.popupMenus
+\noun default 
+ extension point for objects -- such as 
+\noun on 
+IType
+\noun default 
+ and 
+\noun on 
+IMethod
+\noun default 
+ instances -- and editors -- in this case, the 
+\noun on 
+CompilationUnitEditor
+\noun default 
+ -- respectively.
+ The 
+\noun on 
+ActionBase
+\noun default 
+ class's primary purpose is to abstract the selection and invocation mechanism
+ so that the concrete actions, implemented as subclasses of 
+\noun on 
+ActionBase
+\noun default 
+, can simply operate on 
+\noun on 
+IType
+\noun default 
+ and 
+\noun on 
+IMethod
+\noun default 
+ instances.
+ This is done by having the 
+\noun on 
+IActionDelegate#run(IAction)
+\noun default 
+ method, with occasional support from the 
+\noun on 
+IActionDelegate#selectionChanged(IAction, ISelection)
+\noun default 
+ implementation, sort out what the selection really was, filter any unwanted
+ items and then invoke the two abstract overloads to the 
+\noun on 
+run
+\noun default 
+ method, as appropriate.
+\layout Standard
+
+New kinds of selections -- such as 
+\noun on 
+IFile
+\noun default 
+ instances -- or user interface triggers could eventually be added to 
+\noun on 
+ActionBase
+\noun default 
+ and all subclasses would benefit.
+\layout Subsubsection
+
+
+\noun on 
+GenerateTestsAction
+\layout Standard
+
+The 
+\noun on 
+GenerateTestsAction
+\noun default 
+ class is one such implementation of the 
+\noun on 
+ActionBase
+\noun default 
+ class and is the biggest and most complex of the implemented classes.
+ To support its purpose of generating test class and method stubs, it features
+ methods for determining which class is the associated test class i.e., which
+ class should be the recipient of the generated methods, methods for creating
+ such an associated test class if one did not already exist, methods for
+ determining the line separator character(s) and methods for actually generating
+ the contents of the generated items.
+\layout Subsubsection
+
+
+\noun on 
+LaunchActionBase
+\layout Standard
+
+The 
+\noun on 
+LaunchActionBase
+\noun default 
+ class was created when it was made obvious that the Eclipse JUnit launching
+ mechanism was already parameterized for 
+\emph on 
+debug
+\emph default 
+ and 
+\emph on 
+run
+\emph default 
+ modes and thus the code could be re-used.
+ This is exposed through the 
+\noun on 
+launch(IJavaElement, String)
+\noun default 
+ protected method that subclasses are expected to call.
+\layout Subsubsection
+
+
+\noun on 
+DebugTestsAction
+\noun default 
+ and 
+\noun on 
+RunTestsAction
+\layout Standard
+
+The 
+\noun on 
+DebugTestsAction
+\noun default 
+ and 
+\noun on 
+RunTestsAction
+\noun default 
+ classes are very similar in their implementation, differing only in the
+ 
+\noun on 
+mode
+\noun default 
+ parameter when calling their parent class' 
+\noun on 
+launch
+\noun default 
+ method.
+ In fact, this difference could even have been encoded as an instance field
+ in the 
+\noun on 
+LaunchActionBase
+\noun default 
+ class and thus the two classes could have differed only by how their constructo
+rs called the base class' constructor and contained nothing else because
+ their 
+\noun on 
+run
+\noun default 
+ overloads could have thus been pulled up to their superclass.
+\layout Subsubsection
+
+
+\noun on 
+Activator
+\noun default 
+, 
+\noun on 
+SimpleSearchRequestor
+\noun default 
+, 
+\noun on 
+SimpleStructuredSelection
+\noun default 
+, 
+\noun on 
+GenerateTestsActionTest
+\noun default 
+, and 
+\noun on 
+TestingMethod
+\layout Standard
+
+Five other classes were written, but their roles are minor, relative to
+ the other classes and thus their descriptions are brief.
+ The 
+\noun on 
+Activator
+\noun default 
+ class was generated by the Eclipse Plug-in Development Environment (PDE)
+ wizard to control the plug-in's life cycle.
+ The 
+\noun on 
+SimpleSearchRequestor
+\noun default 
+ class was written to minimally satisfy the demands of the JDT's 
+\noun on 
+SearchEngine
+\noun default 
+ class to provide an extension of the 
+\noun on 
+SearchRequestor
+\noun default 
+ abstract class and simply accumulates search results -- in the form of
+ 
+\noun on 
+SearchMatch
+\noun default 
+ instances -- in a 
+\noun on 
+List
+\noun default 
+ and exposes them through its 
+\noun on 
+getResults
+\noun default 
+ method.
+ The idea behind the 
+\noun on 
+SimpleStructuredSelection
+\noun default 
+ class is similar in that the 
+\noun on 
+launch
+\noun default 
+ method of the 
+\noun on 
+JUnitLaunchShortcut
+\noun default 
+ class was expecting an 
+\noun on 
+ISelection
+\noun default 
+ interface implementation and a 
+\noun on 
+List
+\noun default 
+-based one was thus written.
+\layout Standard
+
+The 
+\noun on 
+GenerateTestsActionTest
+\noun default 
+ class contains a single unit test of the method code generation facilities
+ of the 
+\noun on 
+GenerateTestsAction
+\noun default 
+ class, as well as a minimal implementation of the 
+\noun on 
+IMethod
+\noun default 
+ interface -- as the 
+\noun on 
+TestingMethod
+\noun default 
+ class -- for testing purposes.
+\layout Subsection
+
+Decisions made
+\layout Standard
+
+Not only was the design and implementation of this project influenced by
+ inexperience with Eclipse, it was also influenced by articles on Eclipse
+ extensions and through the reverse-engineering of existing open-source
+ Eclipse plug-ins such as JDT, JUnit, PMD 
+\begin_inset LatexCommand \cite{Pmd4Eclipse}
+
+\end_inset 
+
+, and Jupiter 
+\begin_inset LatexCommand \cite{Yamashita2006}
+
+\end_inset 
+
+.
+ The time constraints on the implementation also contributed to trade-offs
+ that might have led to a sub-optimal implementation, although that claim
+ has not been verified by the author.
+ This section discusses decisions that were likely made in haste and which
+ may need to be revisited for future work.
+\layout Standard
+
+Extensions were initially contributed to the 
+\noun on 
+popupMenus
+\noun default 
+ extension point for the 
+\noun on 
+IFile
+\noun default 
+ and 
+\noun on 
+IMethod
+\noun default 
+ objects as they appeared to be the easiest to use and were the focus of
+ a few tutorials.
+ It was later discovered that 
+\noun on 
+IType
+\noun default 
+ is more desirable than 
+\noun on 
+IFile
+\noun default 
+ because there are more relevant user-interface invocation points in Eclipse
+ for 
+\noun on 
+IType
+\noun default 
+, such as the class node in Eclipse's 
+\noun on 
+Outline
+\noun default 
+ view.
+ The plug-in definition and code were adjusted accordingly and a note was
+ added to eventually restore the extension against an 
+\noun on 
+IFile
+\noun default 
+ once it is discovered how to get Eclipse to not automatically convert otherwise
+-obvious 
+\noun on 
+IType
+\noun default 
+ instances to 
+\noun on 
+IFile
+\noun default 
+ instances.
+\layout Standard
+
+Although the tutorials generally demonstrated the use of the 
+\noun on 
+IActionDelegate#selectionChanged(IAction, ISelection)
+\noun default 
+ method to interpret and prepare the selection for use in a subsequent call
+ to the 
+\noun on 
+IActionDelegate#run(IAction)
+\noun default 
+ method, this was found to be an unreliable mechanism as 
+\noun on 
+selectionChanged
+\noun default 
+ was not called as often as expected
+\begin_inset Foot
+collapsed true
+
+\layout Standard
+
+The event was fired for every text selection 
+\emph on 
+size
+\emph default 
+ change, not for every cursor position change, which this author expected
+ and considered a special case of text selection with a size of zero.
+\end_inset 
+
+.While instances of 
+\noun on 
+IStructuredSelection
+\noun default 
+ could be reliably interpreted, most other implementations of 
+\noun on 
+ISelection
+\noun default 
+ could not and consequently the 
+\noun on 
+run
+\noun default 
+ method was tasked with attempting to detect a suitable selection if none
+ had been detected previously.
+\layout Standard
+
+To simplify the implementation, the code generation functionality of the
+ plug-in was implemented with parameterized, hard-coded strings.
+ This has obviously meant a trade-off in flexibility and reconfigurability.
+ Another simplification was the use of the 
+\begin_inset Quotes eld
+\end_inset 
+
+internal
+\begin_inset Quotes erd
+\end_inset 
+
+ 
+\noun on 
+JUnitLaunchShortcut
+\noun default 
+ class of the 
+\noun on 
+org.eclipse.jdt.internal.junit.launcher
+\noun default 
+ package.
+ It provided functionality to invoke JUnit, but also caused Eclipse to emit
+ a warning indicating it was not meant to be used from outside of the JDT
+ plug-in.
+\layout Section
+
+Results and Validation
+\layout Subsection
+
+Results
+\layout Standard
+
+Table 
+\begin_inset LatexCommand \ref{SummaryTable}
+
+\end_inset 
+
+ summarizes the results of side-by-side comparisons of the tasks identified
+ in section 
+\begin_inset LatexCommand \ref{sub:Goals}
+
+\end_inset 
+
+.
+ Full details of the comparisons such as what steps were counted can be
+ found in Appendix 
+\begin_inset LatexCommand \ref{sec:Detailed-Results}
+
+\end_inset 
+
+.
+ The comparisons are made between the absence and the presence of the TODD
+ plug-in, with the additional distinction, in the former case, of the absence
+ and presence of an ATC.
+\begin_inset Float table
+placement h
+wide false
+collapsed false
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{SummaryTable}
+
+\end_inset 
+
+Summary results of side-by-side comparisons
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="5" columns="4">
+<features>
+<column alignment="left" valignment="bottom" width="20col%">
+<column alignment="center" valignment="bottom" width="20col%">
+<column alignment="center" valignment="bottom" width="20col%">
+<column alignment="center" valignment="bottom" width="20col%">
+<row topline="true" bottomline="true">
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Task
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT + TODD
+\end_inset 
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Write a test for a method
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4 steps
+\end_inset 
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Write a set of tests for a method
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+8 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+8 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6 steps
+\end_inset 
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Write a set of tests for a class
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+8 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4 steps
+\end_inset 
+</cell>
+</row>
+<row bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Launch a single test
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+n/a
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6 steps
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+3 steps
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+No ATC
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+ATC already exists
+\end_inset 
+
+
+\layout Subsection
+
+Validation
+\layout Standard
+
+Broadly speaking, the results are favorable and indeed show that the number
+ of steps required to create, run and debug test classes and test methods
+ was reduced by an average of three steps.
+ It can also be argued that the operations themselves were simplified, as
+ the users no longer need to make the distinction between the presence and
+ absence of an existing ATC because TODD will detect this situation and
+ act accordingly.
+\layout Section
+
+Conclusion
+\layout Standard
+
+In general, given the objectives have been met, the goals could be said
+ to have been fulfilled.
+ However, because the project introduced new functionality, the effectiveness
+ study would also have to take into account ramp-up time for learning to
+ use said new functionality.
+ Other factors not taken into account include context, such as the user
+ already having the associated test class open in an editor and existing
+ Eclipse JDT template facilities that could have avoided having the user
+ type the method stub in its entirety in the Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+ scenarios.
+ The choice of metrics was therefore not optimal.
+\layout Standard
+
+It is also the case that, although TODD mostly works, it is not complete
+ as of this writing and, consequently, it is possible that some of its defects
+ could potentially slow down the user to the point of negating TODD's benefits.
+\layout Subsection
+
+Future Work
+\layout Standard
+
+TODD is a useful proof-of-concept project, but, as discussed in section
+ 
+\begin_inset LatexCommand \ref{sec:Approach}
+
+\end_inset 
+
+, some pieces might have been better suited as modifications or enhancements
+ to existing Eclipse and JDT plug-ins.
+ A possible next step would be to find and determine the best places for
+ relevant pieces of code so as to leverage functionality that is already
+ provided by Eclipse and JDT, because the less code that is written, the
+ less bugs are likely to be introduced.
+\layout Standard
+
+Other future work could investigate the possibility of invoking the existing
+ Eclipse JDT templates, thus enabling the reconfigurability of the generated
+ code on a per-workspace and per-project basis.
+ On the topic of templates, it would also be possible to generate smarter
+ templates that generate a stubbed call to the method under test with local
+ variables matching the parameters initialized to some sensible default
+ values.
+\layout Standard
+
+More appropriate user-interface triggers could also be researched, such
+ as exposing TODD's test-generation functionality through the Eclipse JDT
+ quick-assist extensions, since the test generation is indeed sensitive
+ to context.
+ Such quick-assist functionality may also be able to detect if tests have
+ already been written for the method currently under consideration -- thus
+ allowing users to navigate to the tests -- as well as determining what
+ new tests would need to be written to verify recently-performed functionality
+ changes or additions.
+ It may even be possible to integrate the capabilities of Testar 
+\begin_inset LatexCommand \cite{Google:Testar}
+
+\end_inset 
+
+ in determining the set of unit tests to re-run as a result of changing
+ some of the source code.
+\layout Standard
+
+Lastly, improvement of the evaluation metrics and real-world testing by
+ programmers other than the author would most likely discover more defects
+ as well as uncover ideas for new functionality.
+\layout Appendices
+\start_of_appendix 
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+This note is only here so to the Appendices macro doesn't disappear
+\end_inset 
+
+
+\layout Section
+
+Source Code
+\layout Subsection
+
+Methodology
+\layout Standard
+
+The plug-in software implementation was 
+\begin_inset Quotes eld
+\end_inset 
+
+grown
+\begin_inset Quotes erd
+\end_inset 
+
+ 
+\begin_inset LatexCommand \cite{Brooks1987}
+
+\end_inset 
+
+ through small and frequent iterations.
+ The Subclipse plug-in for Eclipse was used to communicate with a Subversion
+ server for source control.
+ Each commit was fully documented and any missing functionality and potential
+ defects have been identified with 
+\begin_inset Quotes eld
+\end_inset 
+
+to dos
+\begin_inset Quotes erd
+\end_inset 
+
+ -- specially-formatted comments in the source code that indicate work that
+ still needs to be done.
+ Very little unit testing has been implemented, mostly because the nature
+ of the project's user interface would have required some Graphical User
+ Interface (GUI) automation of some sort and time constraints made manual
+ testing the best option under the circumstances.
+ Also, the very tool that would have facilitated the writing and execution
+ of unit tests was, by definition, under heavy development at the time and
+ hence could not be easily used.
+\layout Subsection
+
+How to obtain
+\layout Standard
+
+The source code has been published to Google Code's Project Hosting as the
+ project named 
+\noun on 
+testoriented
+\noun default 
+, which can be reached at: 
+\begin_inset LatexCommand \htmlurl{http://code.google.com/p/testoriented/}
+
+\end_inset 
+
+.
+ A pre-built version -- in the form of a Java Archive file which may be
+ deployed into Eclipse's 
+\noun on 
+plugins
+\noun default 
+ folder -- can be obtained from 
+\begin_inset LatexCommand \htmlurl{http://tinyurl.com/s9nza}
+
+\end_inset 
+
+.
+\layout Subsection
+
+License
+\layout Standard
+
+The source code has been released under the terms of the MIT License, which
+ is reproduced below:
+\layout Quote
+
+Copyright (c) 2006 Olivier Dagenais
+\layout Quote
+
+Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the 
+\begin_inset Quotes eld
+\end_inset 
+
+Software
+\begin_inset Quotes erd
+\end_inset 
+
+), to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the Software
+ is furnished to do so, subject to the following conditions:
+\layout Quote
+
+The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+\layout Quote
+
+THE SOFTWARE IS PROVIDED 
+\begin_inset Quotes eld
+\end_inset 
+
+AS IS
+\begin_inset Quotes erd
+\end_inset 
+
+, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+ AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE
+, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+\layout Section
+
+Glossary of Acronyms
+\layout Description
+
+ATC Associated Test Class
+\layout Description
+
+CUT Class Under Test
+\layout Description
+
+GUI Graphical User Interface
+\layout Description
+
+IDE Integrated Development Environment
+\layout Description
+
+JDT Java Development Tools
+\layout Description
+
+PDE Plug-in Development Environment
+\layout Description
+
+TDN TestDriven.Net
+\layout Description
+
+TDD Test-Driven Development
+\layout Section
+
+Detailed Results
+\begin_inset LatexCommand \label{sec:Detailed-Results}
+
+\end_inset 
+
+
+\layout Standard
+
+The following sub-sections illustrate the results of the side-by-side comparison
+s of the tasks identified as Goals, in section 
+\begin_inset LatexCommand \ref{sub:Goals}
+
+\end_inset 
+
+.
+ The comparisons are made between the absence and the presence of the TODD
+ plug-in, with the additional distinction, in the former case, of the absence
+ and presence of an existing ATC.
+ TODD hides this distinction from users.
+\layout Subsection
+
+Write a test for a method
+\layout Standard
+
+Starting from the method for which a test is to be written, Table 
+\begin_inset LatexCommand \vref{Table:WriteTestForMethod}
+
+\end_inset 
+
+ lists the steps taken for each alternative.
+ TODD takes only 4 steps, while the other alternatives take 7.
+\begin_inset Float table
+placement p
+wide true
+collapsed false
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{Table:WriteTestForMethod}
+
+\end_inset 
+
+Number of steps necessary to write a test for a method, with and without
+ TODD
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="8" columns="4">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT + TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+1
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+File
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Window
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+invoke the context menu
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+2
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+New
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Show View
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+3
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+JUnit
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Package Explorer
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Generate test(s)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Next
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+open associated test class
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+5
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+select method to test
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+position cursor at appropriate insertion point
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finish
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+write 
+\begin_inset Quotes eld
+\end_inset 
+
+
+\noun on 
+@Test public void _testmethodname_ ( ) { }
+\begin_inset Quotes erd
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+insert test code inside method body
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+No ATC
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+ATC already exists
+\end_inset 
+
+
+\layout Subsection
+
+Write a set of tests for a method
+\layout Standard
+
+Starting from the method for which more than one test is to be written,
+ Table 
+\begin_inset LatexCommand \vref{Table:WriteSetOfTestsForMethod}
+
+\end_inset 
+
+ lists the steps taken for each alternative.
+ The TODD alternative edges out the other two by 2 steps, although the 
+\begin_inset Quotes eld
+\end_inset 
+
+loop
+\begin_inset Quotes erd
+\end_inset 
+
+ is slightly longer.
+ On the other hand, the loop's operations are simpler.
+\begin_inset Float table
+placement p
+wide true
+collapsed true
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{Table:WriteSetOfTestsForMethod}
+
+\end_inset 
+
+Number of steps necessary to write a set of tests for a method, with and
+ without TODD
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="9" columns="4">
+<features>
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT + TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+1
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+File
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Window
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+invoke the context menu
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+2
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+New
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Show View
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+3
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+JUnit Test Case
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Package Explorer
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Generate test(s)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Next
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+open associated test class
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+5
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+select method to test
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+position cursor at appropriate insertion point
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+switch back to the method
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finish
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+write 
+\begin_inset Quotes eld
+\end_inset 
+
+
+\noun on 
+@Test public void _testmethodname_ ( ) { }
+\begin_inset Quotes erd
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+repeat steps 1-5 for the rest of the tests
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+insert test code inside method body
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+8
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+repeat steps 6-7 of Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+repeat steps 6-7 for the rest of the tests
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+No ATC
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+ATC already exists
+\end_inset 
+
+
+\layout Subsection
+
+Write a set of tests for a class
+\layout Standard
+
+Starting from the class for which a test is to be written for each method,
+ Table 
+\begin_inset LatexCommand \vref{Table:WriteSetOfTestsForClass}
+
+\end_inset 
+
+ lists the steps taken for each alternative.
+ TODD competes well with the Eclipse JDT
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+ case and really shines against the more common scenario represented by
+ Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+.
+\begin_inset Float table
+placement p
+wide true
+collapsed true
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{Table:WriteSetOfTestsForClass}
+
+\end_inset 
+
+Number of steps necessary to write a set of tests for a class, with and
+ without TODD
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="9" columns="4">
+<features>
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT + TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+1
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+File
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Window
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+invoke the context menu
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+2
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+New
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Show View
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+3
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+JUnit Test Case
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Package Explorer
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Generate test(s)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Next
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+open associated test class
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+for each method, replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+5
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+selecting the class should select all methods
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+position cursor at appropriate insertion point
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Finish
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+write 
+\begin_inset Quotes eld
+\end_inset 
+
+
+\noun on 
+@Test public void _testmethodname_ ( ) { }
+\begin_inset Quotes erd
+\end_inset 
+
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+7
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+for each method, replace generated 
+\begin_inset Quotes eld
+\end_inset 
+
+fail
+\begin_inset Quotes erd
+\end_inset 
+
+ line with test code
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+insert test code inside method body
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+8
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+repeat steps 6-7 for the rest of the tests
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{a}}$
+\end_inset 
+
+No ATC
+\layout Standard
+
+
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset 
+
+ATC already exists
+\end_inset 
+
+
+\layout Subsection
+
+Launch a single test for running or debugging
+\layout Standard
+
+Starting from the test method that is to be launched, in the Java editor,
+ Table 
+\begin_inset LatexCommand \vref{Table:LaunchTest}
+
+\end_inset 
+
+ lists the steps taken for both alternatives.
+ TODD works as advertised here and indeed avoids the user having to show
+ and use the Outline view to launch the test method currently being written.
+\begin_inset Float table
+placement p
+wide true
+collapsed true
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{Table:LaunchTest}
+
+\end_inset 
+
+Number of steps necessary to launch a single test for running or debugging,
+ with and without TODD
+\layout Standard
+
+
+\begin_inset  Tabular
+<lyxtabular version="3" rows="7" columns="3">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="20page%">
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+Eclipse JDT + TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+1
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Window
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+invoke context menu
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+2
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Show View
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+TODD
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+3
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Outline
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Run JUnit tests(s)
+\noun default 
+ (or 
+\noun on 
+Debug JUnit test(s)
+\noun default 
+)
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+4
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+invoke context menu
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+5
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+Run As
+\noun default 
+ (or 
+\noun on 
+Debug As
+\noun default 
+)
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+6
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+
+\noun on 
+JUnit Test
+\end_inset 
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\layout Standard
+
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\end_inset 
+
+
+\layout Section*
+
+Acknowledgment
+\layout Standard
+
+The author would like to thank Jamie Cansdale for his review and comments
+ on a draft of this paper, as well as his suggestion for a "go to test"
+ feature.
+ Thanks are also extended to Dan Edmunds, Adrian Batos-Parac, Neil Fraser
+ and Benjamin Tatham for reviewing and annotating printouts of an early
+ draft.
+ Lastly, the author would like to thank Stefan Xenos for a thorough review
+ of the final version.
+\layout Standard
+
+
+\begin_inset LatexCommand \BibTeX[IEEEtran]{TODD}
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+% This LaTeX comment is needed to force LyX to generate two separate environments
+\newline 
+
+\end_inset 
+
+
+\the_end
