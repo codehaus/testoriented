@@ -31,7 +31,7 @@
 \begin_body
 
 \begin_layout Title
-T.O.D.D.: Test-Oriented Development and Debugging (December 2006)
+TODD: Test-Oriented Development and Debugging (May 2007)
 \end_layout
 
 \begin_layout Author
@@ -59,8 +59,8 @@ The benefits of Test-Driven Development (TDD) can be appealing to many seeking
  can implement the TDD methodology fully.
  A technique similar to TDD -- test-oriented development -- is introduced
  and a prototype software implementation in the form of an Eclipse plug-in
- is presented to support the adoption of this more pragmatic approach so
- that it can help write high quality software.
+ is presented to support the adoption of this more pragmatic approach by
+ developers to help them write high quality software.
 \end_layout
 
 \begin_layout Keywords
@@ -151,8 +151,7 @@ Problem
 The TDD process involves programmers writing unit tests first, then writing
  just enough code to make the new tests pass, usually one test at a time.
  While this is a noble goal, software developers do not always have the
- luxury to write tests first, due to business pressures or project constraints,
- for example.
+ luxury to write tests first due to business pressures or project constraints.
  A more pragmatic approach of on-demand testing -- such as writing tests
  when an implementation is not straightforward or has potential side-effects
  -- can be adopted and consequently tests are written at about the same
@@ -172,7 +171,7 @@ test-oriented
 
 \begin_layout Standard
 Some automation facilities are provided by modern Integrated Development
- Environments (IDE) to support the 
+ Environments (IDEs) to support the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -196,8 +195,8 @@ pure
 
 \end_inset
 
- can offer to create a method stub for a new method whose interface was
- defined through the first instance of its use.
+ offer to create a method stub for a new method whose interface was defined
+ through the first instance of its use.
  There is, however, no facility in Eclipse to support the test-oriented
  development approach of creating a test method stub for a method currently
  under consideration.
@@ -219,7 +218,7 @@ Motivation
 \end_layout
 
 \begin_layout Standard
-This project's implementation is focused on the JUnit 
+In this paper, we focus on the JUnit 
 \begin_inset LatexCommand \cite{JUnit}
 
 \end_inset
@@ -243,18 +242,15 @@ y of the software and its source code as well as its extensibility features.
 \end_layout
 
 \begin_layout Standard
-Because it is regarded as a beneficial practice toward increasing the quality
- of code, TDD adoption should be promoted to Eclipse JDT users.
+TDD adoption should be promoted to Eclipse JDT users because it is regarded
+ as a beneficial practice toward increasing the quality of code.
  A potentially good way to do so would be to add some capabilities to the
  JDT that encourage and facilitate the addition of unit tests beyond what
  is currently available as of this writing, as a stepping stone toward tested
  software and potentially toward TDD.
  The idea, therefore, is to allow TDD to be introduced progressively into
  software projects, so as to adversely impact them as little as possible.
-\end_layout
-
-\begin_layout Standard
-Unit tests are usually written in a separate class than the CUT, and as
+ Unit tests are usually written in a separate class than the CUT, and as
  such, templates are insufficient because they traditionally operate only
  locally (i.e.
  in the current editor) or without context.
@@ -289,14 +285,11 @@ Goals
 \end_layout
 
 \begin_layout Standard
-The goals of this project are to lower the barrier of entry and speed up
+The goals of our approach are to lower the barrier of entry and speed up
  the writing of unit tests such that more -- and better -- unit tests can
  be written than otherwise would be, and to help enforce a convention on
  said unit tests.
-\end_layout
-
-\begin_layout Standard
-These goals are to be validated according to the following metrics:
+ These goals are to be validated according to the following metrics:
 \end_layout
 
 \begin_layout Enumerate
@@ -336,8 +329,7 @@ Objectives
 \end_layout
 
 \begin_layout Standard
-To meet the project's goals, the following features will be added to the
- Eclipse JDT:
+To meet the goals, the following features will be added to the Eclipse JDT:
 \end_layout
 
 \begin_layout Enumerate
@@ -398,7 +390,7 @@ A context menu entry for the Java Outline that provides equivalent functionality
 \end_layout
 
 \begin_deeper
-\begin_layout Enumerate
+\begin_layout Itemize
 Note: The equivalent functionality to 
 \begin_inset LatexCommand \ref{runTestMethod}
 
@@ -430,10 +422,17 @@ Background
 \end_layout
 
 \begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
 Eclipse is an open source community whose projects are focused on building
  an extensible development platform, runtimes and application frameworks
  for building, deploying and managing software across the entire software
- lifecycle 
+ lifecycle
+\begin_inset Quotes erd
+\end_inset
+
+ 
 \begin_inset LatexCommand \cite{EclipseFaq2006}
 
 \end_inset
@@ -442,8 +441,15 @@ Eclipse is an open source community whose projects are focused on building
 \end_layout
 
 \begin_layout Quote
+\begin_inset Quotes eld
+\end_inset
+
 The JDT project provides the tool plug-ins that implement a Java IDE supporting
- the development of any Java application, including Eclipse plug-ins 
+ the development of any Java application, including Eclipse plug-ins
+\begin_inset Quotes erd
+\end_inset
+
+ 
 \begin_inset LatexCommand \cite{JDT}
 
 \end_inset
@@ -482,8 +488,8 @@ new JUnit Test Case
 
  wizard, but it is not possible to use this wizard to augment an existing
  ATC with new methods.
- Another observation that leads this author to conclude that the wizard
- was most likely intended to be used in a 
+ Another observation that leads us to conclude that the wizard was most
+ likely intended to be used in a 
 \begin_inset Quotes eld
 \end_inset
 
@@ -525,10 +531,7 @@ Content Assist
 \end_inset
 
  functionality, but only at the cursor's current location.
-\end_layout
-
-\begin_layout Standard
-Some editions of Microsoft's Visual Studio apparently provide functionality
+ Some editions of Microsoft's Visual Studio apparently provide functionality
  similar to that proposed here, from a context menu in the source code editor
  
 \begin_inset LatexCommand \cite{Dockendorf}
@@ -536,7 +539,7 @@ Some editions of Microsoft's Visual Studio apparently provide functionality
 \end_inset
 
 .
- A thorough comparison was made difficult due to its prohibitive price.
+ A thorough comparison was made difficult due to their prohibitive price.
 \end_layout
 
 \begin_layout Section
@@ -551,7 +554,7 @@ Approach
 The preferred approach for adding features to Eclipse is to contribute some
  extensions to existing extension points and, if possible, contribute new
  extension points so that others may do the same.
- Although much of the functionality sought by this project is likely to
+ Although much of the functionality sought by this approach is likely to
  already be provided by code inside existing plug-ins -- and thus extensions
  could have been contributed from them -- a new, standalone plug-in was
  instead created to clearly show the contributions involved.
@@ -560,10 +563,8 @@ The preferred approach for adding features to Eclipse is to contribute some
 \end_layout
 
 \begin_layout Standard
-Due to the author's experience with Visual Studio and his relative inexperience
- with Eclipse (similarly for their respective extensions and extension mechanism
-s), the new features were designed to be exposed in context menus, as with
- the TDN add-in.
+The new features were designed to be exposed in context menus, as with the
+ TDN add-in.
  The context menus' new actions were expected to consist mostly of 
 \begin_inset Quotes eld
 \end_inset
@@ -591,39 +592,8 @@ The software's design was kept as simple and straightforward as possible
 \end_inset
 
  includes only the major classes.
- All classes written for this project are discussed briefly in this section,
+ All classes written for this approach are discussed briefly in this section,
  followed by an account of how the Eclipse extensions were used.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-placement t
-wide true
-sideways false
-status open
-
-\begin_layout Standard
-\begin_inset Graphics
-	filename Actions Class Diagram.png
-	width 7in
-	keepAspectRatio
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Caption
-\begin_inset LatexCommand \label{UML class diagram}
-
-\end_inset
-
-A UML class diagram showing the relationships between the 5 major classes.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsubsection
@@ -662,7 +632,10 @@ IMethod
 CompilationUnitEditor
 \noun default
  -- respectively.
- The 
+\end_layout
+
+\begin_layout Standard
+The 
 \noun on
 ActionBase
 \noun default
@@ -909,28 +882,6 @@ Decisions made
 \end_layout
 
 \begin_layout Standard
-Not only was the design and implementation of this project influenced by
- inexperience with Eclipse, it was also influenced by articles on Eclipse
- extensions and through the reverse-engineering of existing open-source
- Eclipse plug-ins such as JDT, JUnit, PMD 
-\begin_inset LatexCommand \cite{Pmd4Eclipse}
-
-\end_inset
-
-, and Jupiter 
-\begin_inset LatexCommand \cite{Yamashita2006}
-
-\end_inset
-
-.
- The time constraints on the implementation also contributed to trade-offs
- that might have led to a sub-optimal implementation, although that claim
- has not been verified by the author.
- This section discusses decisions that were likely made in haste and which
- may need to be revisited for future work.
-\end_layout
-
-\begin_layout Standard
 Extensions were initially contributed to the 
 \noun on
 popupMenus
@@ -944,7 +895,7 @@ IFile
 IMethod
 \noun default
  objects as they appeared to be the easiest to use and were the focus of
- a few tutorials.
+ a few Eclipse tutorials.
  It was later discovered that 
 \noun on
 IType
@@ -981,7 +932,7 @@ IFile
 \end_layout
 
 \begin_layout Standard
-Although the tutorials generally demonstrated the use of the 
+Although Eclipse tutorials generally demonstrated the use of the 
 \noun on
 IActionDelegate#selectionChanged(IAction, ISelection)
 \noun default
@@ -996,15 +947,15 @@ selectionChanged
 \noun default
  was not called as often as expected
 \begin_inset Foot
-status collapsed
+status open
 
 \begin_layout Standard
 The event was fired for every text selection 
 \emph on
 size
 \emph default
- change, not for every cursor position change, which this author expected
- and considered a special case of text selection with a size of zero.
+ change, not for every cursor position change, which we expected and considered
+ a special case of text selection with a size of zero.
 \end_layout
 
 \end_inset
@@ -1023,6 +974,37 @@ run
 \noun default
  method was tasked with attempting to detect a suitable selection if none
  had been detected previously.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename Actions Class Diagram.png
+	width 100col%
+	keepAspectRatio
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Caption
+\begin_inset LatexCommand \label{UML class diagram}
+
+\end_inset
+
+A UML class diagram showing the relationships between the 5 major classes.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1066,19 +1048,9 @@ Table
 \end_inset
 
  summarizes the results of side-by-side comparisons of the tasks identified
- in section 
-\begin_inset LatexCommand \ref{sub:Goals}
-
-\end_inset
-
-.
+ in the introduction.
  Full details of the comparisons such as what steps were counted can be
- found in Appendix 
-\begin_inset LatexCommand \ref{sec:Detailed-Results}
-
-\end_inset
-
-.
+ found in the following section.
  The comparisons are made between the absence and the presence of the TODD
  plug-in, with the additional distinction, in the former case, of the absence
  and presence of an ATC.
@@ -1086,7 +1058,7 @@ Table
 placement h
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Caption
 \begin_inset LatexCommand \label{SummaryTable}
@@ -1329,277 +1301,6 @@ ATC already exists
 \end_layout
 
 \begin_layout Subsection
-Validation
-\end_layout
-
-\begin_layout Standard
-Broadly speaking, the results are favorable and indeed show that the number
- of steps required to create, run and debug test classes and test methods
- was reduced by an average of three steps.
- It can also be argued that the operations themselves were simplified, as
- the users no longer need to make the distinction between the presence and
- absence of an existing ATC because TODD will detect this situation and
- act accordingly.
-\end_layout
-
-\begin_layout Section
-Conclusion
-\end_layout
-
-\begin_layout Standard
-In general, given the objectives have been met, the goals could be said
- to have been fulfilled.
- However, because the project introduced new functionality, the effectiveness
- study would also have to take into account ramp-up time for learning to
- use said new functionality.
- Other factors not taken into account include context, such as the user
- already having the associated test class open in an editor and existing
- Eclipse JDT template facilities that could have avoided having the user
- type the method stub in its entirety in the Eclipse JDT
-\begin_inset Formula $^{\textrm{b}}$
-\end_inset
-
- scenarios.
- The choice of metrics was therefore not optimal.
-\end_layout
-
-\begin_layout Standard
-It is also the case that, although TODD mostly works, it is not complete
- as of this writing and, consequently, it is possible that some of its defects
- could potentially slow down the user to the point of negating TODD's benefits.
-\end_layout
-
-\begin_layout Subsection
-Future Work
-\end_layout
-
-\begin_layout Standard
-TODD is a useful proof-of-concept project, but, as discussed in section
- 
-\begin_inset LatexCommand \ref{sec:Approach}
-
-\end_inset
-
-, some pieces might have been better suited as modifications or enhancements
- to existing Eclipse and JDT plug-ins.
- A possible next step would be to find and determine the best places for
- relevant pieces of code so as to leverage functionality that is already
- provided by Eclipse and JDT, because the less code that is written, the
- less bugs are likely to be introduced.
-\end_layout
-
-\begin_layout Standard
-Other future work could investigate the possibility of invoking the existing
- Eclipse JDT templates, thus enabling the reconfigurability of the generated
- code on a per-workspace and per-project basis.
- On the topic of templates, it would also be possible to generate smarter
- templates that generate a stubbed call to the method under test with local
- variables matching the parameters initialized to some sensible default
- values.
-\end_layout
-
-\begin_layout Standard
-More appropriate user-interface triggers could also be researched, such
- as exposing TODD's test-generation functionality through the Eclipse JDT
- quick-assist extensions, since the test generation is indeed sensitive
- to context.
- Such quick-assist functionality may also be able to detect if tests have
- already been written for the method currently under consideration -- thus
- allowing users to navigate to the tests -- as well as determining what
- new tests would need to be written to verify recently-performed functionality
- changes or additions.
- It may even be possible to integrate the capabilities of Testar 
-\begin_inset LatexCommand \cite{Google:Testar}
-
-\end_inset
-
- in determining the set of unit tests to re-run as a result of changing
- some of the source code.
-\end_layout
-
-\begin_layout Standard
-Lastly, improvement of the evaluation metrics and real-world testing by
- programmers other than the author would most likely discover more defects
- as well as uncover ideas for new functionality.
-\end_layout
-
-\begin_layout Appendices
-\start_of_appendix
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Standard
-This note is only here so to the Appendices macro doesn't disappear
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Source Code
-\end_layout
-
-\begin_layout Subsection
-Methodology
-\end_layout
-
-\begin_layout Standard
-The plug-in software implementation was 
-\begin_inset Quotes eld
-\end_inset
-
-grown
-\begin_inset Quotes erd
-\end_inset
-
- 
-\begin_inset LatexCommand \cite{Brooks1987}
-
-\end_inset
-
- through small and frequent iterations.
- The Subclipse plug-in for Eclipse was used to communicate with a Subversion
- server for source control.
- Each commit was fully documented and any missing functionality and potential
- defects have been identified with 
-\begin_inset Quotes eld
-\end_inset
-
-to dos
-\begin_inset Quotes erd
-\end_inset
-
- -- specially-formatted comments in the source code that indicate work that
- still needs to be done.
- Very little unit testing has been implemented, mostly because the nature
- of the project's user interface would have required some Graphical User
- Interface (GUI) automation of some sort and time constraints made manual
- testing the best option under the circumstances.
- Also, the very tool that would have facilitated the writing and execution
- of unit tests was, by definition, under heavy development at the time and
- hence could not be easily used.
-\end_layout
-
-\begin_layout Subsection
-How to obtain
-\end_layout
-
-\begin_layout Standard
-The source code has been published to Google Code's Project Hosting as the
- project named 
-\noun on
-testoriented
-\noun default
-, which can be reached at: 
-\begin_inset LatexCommand \htmlurl{http://code.google.com/p/testoriented/}
-
-\end_inset
-
-.
- A pre-built version -- in the form of a Java Archive file which may be
- deployed into Eclipse's 
-\noun on
-plugins
-\noun default
- folder -- can be obtained from 
-\begin_inset LatexCommand \htmlurl{http://tinyurl.com/s9nza}
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Subsection
-License
-\end_layout
-
-\begin_layout Standard
-The source code has been released under the terms of the MIT License, which
- is reproduced below:
-\end_layout
-
-\begin_layout Quote
-Copyright (c) 2006 Olivier Dagenais
-\end_layout
-
-\begin_layout Quote
-Permission is hereby granted, free of charge, to any person obtaining a
- copy of this software and associated documentation files (the 
-\begin_inset Quotes eld
-\end_inset
-
-Software
-\begin_inset Quotes erd
-\end_inset
-
-), to deal in the Software without restriction, including without limitation
- the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons to whom the Software
- is furnished to do so, subject to the following conditions:
-\end_layout
-
-\begin_layout Quote
-The above copyright notice and this permission notice shall be included
- in all copies or substantial portions of the Software.
-\end_layout
-
-\begin_layout Quote
-THE SOFTWARE IS PROVIDED 
-\begin_inset Quotes eld
-\end_inset
-
-AS IS
-\begin_inset Quotes erd
-\end_inset
-
-, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
- TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- AND NONINFRINGEMENT.
- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE
-, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
-\end_layout
-
-\begin_layout Section
-Glossary of Acronyms
-\end_layout
-
-\begin_layout Description
-ATC Associated Test Class
-\end_layout
-
-\begin_layout Description
-CUT Class Under Test
-\end_layout
-
-\begin_layout Description
-GUI Graphical User Interface
-\end_layout
-
-\begin_layout Description
-IDE Integrated Development Environment
-\end_layout
-
-\begin_layout Description
-JDT Java Development Tools
-\end_layout
-
-\begin_layout Description
-PDE Plug-in Development Environment
-\end_layout
-
-\begin_layout Description
-TDN TestDriven.Net
-\end_layout
-
-\begin_layout Description
-TDD Test-Driven Development
-\end_layout
-
-\begin_layout Section
 Detailed Results
 \begin_inset LatexCommand \label{sec:Detailed-Results}
 
@@ -1609,34 +1310,29 @@ Detailed Results
 \end_layout
 
 \begin_layout Standard
-The following sub-sections illustrate the results of the side-by-side comparison
-s of the tasks identified as Goals, in section 
-\begin_inset LatexCommand \ref{sub:Goals}
-
-\end_inset
-
-.
+The following sections illustrate the results of the side-by-side comparisons
+ of the tasks identified as goals.
  The comparisons are made between the absence and the presence of the TODD
  plug-in, with the additional distinction, in the former case, of the absence
  and presence of an existing ATC.
  TODD hides this distinction from users.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Write a test for a method
 \end_layout
 
 \begin_layout Standard
 Starting from the method for which a test is to be written, Table 
-\begin_inset LatexCommand \vref{Table:WriteTestForMethod}
+\begin_inset LatexCommand \ref{Table:WriteTestForMethod}
 
 \end_inset
 
  lists the steps taken for each alternative.
  TODD takes only 4 steps, while the other alternatives take 7.
 \begin_inset Float table
-placement p
-wide true
+placement H
+wide false
 sideways false
 status open
 
@@ -1654,9 +1350,9 @@ Number of steps necessary to write a test for a method, with and without
 <lyxtabular version="3" rows="8" columns="4">
 <features>
 <column alignment="center" valignment="top" width="0">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="25col%">
+<column alignment="left" valignment="bottom" width="25col%">
+<column alignment="left" valignment="bottom" width="25col%">
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -2041,14 +1737,14 @@ ATC already exists
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Write a set of tests for a method
 \end_layout
 
 \begin_layout Standard
 Starting from the method for which more than one test is to be written,
  Table 
-\begin_inset LatexCommand \vref{Table:WriteSetOfTestsForMethod}
+\begin_inset LatexCommand \ref{Table:WriteSetOfTestsForMethod}
 
 \end_inset
 
@@ -2064,10 +1760,10 @@ loop
  is slightly longer.
  On the other hand, the loop's operations are simpler.
 \begin_inset Float table
-placement p
-wide true
+placement H
+wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Caption
 \begin_inset LatexCommand \label{Table:WriteSetOfTestsForMethod}
@@ -2083,9 +1779,9 @@ Number of steps necessary to write a set of tests for a method, with and
 <lyxtabular version="3" rows="9" columns="4">
 <features>
 <column alignment="left" valignment="top" width="0">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="30col%">
+<column alignment="left" valignment="bottom" width="30col%">
+<column alignment="left" valignment="bottom" width="30col%">
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -2512,14 +2208,14 @@ ATC already exists
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Write a set of tests for a class
 \end_layout
 
 \begin_layout Standard
 Starting from the class for which a test is to be written for each method,
  Table 
-\begin_inset LatexCommand \vref{Table:WriteSetOfTestsForClass}
+\begin_inset LatexCommand \ref{Table:WriteSetOfTestsForClass}
 
 \end_inset
 
@@ -2535,10 +2231,10 @@ Starting from the class for which a test is to be written for each method,
 
 .
 \begin_inset Float table
-placement p
-wide true
+placement H
+wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Caption
 \begin_inset LatexCommand \label{Table:WriteSetOfTestsForClass}
@@ -2554,9 +2250,9 @@ Number of steps necessary to write a set of tests for a class, with and
 <lyxtabular version="3" rows="9" columns="4">
 <features>
 <column alignment="left" valignment="top" width="0">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="30col%">
+<column alignment="left" valignment="bottom" width="30col%">
+<column alignment="left" valignment="bottom" width="30col%">
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -2979,14 +2675,14 @@ ATC already exists
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Launch a single test for running or debugging
 \end_layout
 
 \begin_layout Standard
 Starting from the test method that is to be launched, in the Java editor,
  Table 
-\begin_inset LatexCommand \vref{Table:LaunchTest}
+\begin_inset LatexCommand \ref{Table:LaunchTest}
 
 \end_inset
 
@@ -2994,10 +2690,10 @@ Starting from the test method that is to be launched, in the Java editor,
  TODD works as advertised here and indeed avoids the user having to show
  and use the Outline view to launch the test method currently being written.
 \begin_inset Float table
-placement p
-wide true
+placement H
+wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Caption
 \begin_inset LatexCommand \label{Table:LaunchTest}
@@ -3013,8 +2709,8 @@ Number of steps necessary to launch a single test for running or debugging,
 <lyxtabular version="3" rows="7" columns="3">
 <features>
 <column alignment="center" valignment="top" width="0">
-<column alignment="left" valignment="bottom" width="20page%">
-<column alignment="left" valignment="bottom" width="20page%">
+<column alignment="left" valignment="bottom" width="40col%">
+<column alignment="left" valignment="bottom" width="40col%">
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -3256,12 +2952,144 @@ JUnit Test
 
 \end_layout
 
-\begin_layout Section*
+\begin_layout Subsection
+Validation
+\end_layout
+
+\begin_layout Standard
+Broadly speaking, the results are favorable and indeed show that the number
+ of steps required to create, run and debug test classes and test methods
+ was reduced by an average of three steps.
+ It can also be argued that the operations themselves were simplified, as
+ the users no longer need to make the distinction between the presence and
+ absence of an existing ATC because TODD will detect this situation and
+ act accordingly.
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+In general, given the objectives have been met, the goals could be said
+ to have been fulfilled.
+ However, because the approach introduced new functionality, the effectiveness
+ study would also have to take into account ramp-up time for learning to
+ use said new functionality.
+ Other factors not taken into account include context, such as the user
+ already having the associated test class open in an editor and existing
+ Eclipse JDT template facilities that could have avoided having the user
+ type the method stub in its entirety in the Eclipse JDT
+\begin_inset Formula $^{\textrm{b}}$
+\end_inset
+
+ scenarios.
+ The choice of metrics was therefore not optimal.
+\end_layout
+
+\begin_layout Standard
+It is also the case that, although TODD mostly works, it is not complete
+ as of this writing and, consequently, it is possible that some of its defects
+ could potentially slow down the user to the point of negating TODD's benefits.
+\end_layout
+
+\begin_layout Subsection
+Future Work
+\end_layout
+
+\begin_layout Standard
+TODD is a useful proof-of-concept project, but, as discussed in section
+ 
+\begin_inset LatexCommand \ref{sec:Approach}
+
+\end_inset
+
+, some pieces might have been better suited as modifications or enhancements
+ to existing Eclipse and JDT plug-ins.
+ A possible next step would be to find and determine the best places for
+ relevant pieces of code so as to leverage functionality that is already
+ provided by Eclipse and JDT, because the less code that is written, the
+ less bugs are likely to be introduced.
+\end_layout
+
+\begin_layout Standard
+Other future work could investigate the possibility of invoking the existing
+ Eclipse JDT templates, thus enabling the reconfigurability of the generated
+ code on a per-workspace and per-project basis.
+ On the topic of templates, it would also be possible to generate smarter
+ templates that generate a stubbed call to the method under test with local
+ variables matching the parameters initialized to some sensible default
+ values.
+\end_layout
+
+\begin_layout Standard
+More appropriate user-interface triggers could also be researched, such
+ as exposing TODD's test-generation functionality through the Eclipse JDT
+ quick-assist extensions, since the test generation is indeed sensitive
+ to context.
+ Such quick-assist functionality may also be able to detect if tests have
+ already been written for the method currently under consideration -- thus
+ allowing users to navigate to the tests -- as well as determining what
+ new tests would need to be written to verify recently-performed functionality
+ changes or additions.
+ It may even be possible to integrate the capabilities of Testar 
+\begin_inset LatexCommand \cite{Google:Testar}
+
+\end_inset
+
+ in determining the set of unit tests to re-run as a result of changing
+ some of the source code.
+\end_layout
+
+\begin_layout Standard
+Lastly, improvement of the evaluation metrics and real-world testing by
+ programmers other than the authors would most likely discover more defects
+ as well as uncover ideas for new functionality.
+\end_layout
+
+\begin_layout Subsection
+How to obtain
+\end_layout
+
+\begin_layout Standard
+The source code has been published to Google Code's Project Hosting as the
+ project named 
+\noun on
+testoriented
+\noun default
+, which can be reached at: 
+\begin_inset LatexCommand \htmlurl{http://code.google.com/p/testoriented/}
+
+\end_inset
+
+.
+ A pre-built version -- in the form of a Java Archive file which may be
+ deployed into Eclipse's 
+\noun on
+plugins
+\noun default
+ folder -- can be obtained from 
+\begin_inset LatexCommand \htmlurl{http://tinyurl.com/s9nza}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+License
+\end_layout
+
+\begin_layout Standard
+The source code has been released under the terms of the MIT License.
+\end_layout
+
+\begin_layout Section
 Acknowledgment
 \end_layout
 
 \begin_layout Standard
-The author would like to thank Jamie Cansdale for his review and comments
+The authors would like to thank Jamie Cansdale for his review and comments
  on a draft of this paper, as well as his suggestion for a "go to test"
  feature.
  Thanks are also extended to Dan Edmunds, Adrian Batos-Parac, Neil Fraser
