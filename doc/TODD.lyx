@@ -1,5 +1,7 @@
-#LyX 1.3 created this file. For more info see http://www.lyx.org/
-\lyxformat 221
+#LyX 1.4.3-5 created this file. For more info see http://www.lyx.org/
+\lyxformat 245
+\begin_document
+\begin_header
 \textclass IEEEtran
 \language english
 \inputencoding default
@@ -7,46 +9,51 @@
 \graphics default
 \float_placement hbt
 \paperfontsize default
-\spacing single 
-\papersize Default
-\paperpackage a4
-\use_geometry 0
-\use_amsmath 0
-\use_natbib 0
-\use_numerical_citations 0
+\spacing single
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\cite_engine basic
+\use_bibtopic false
 \paperorientation portrait
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
 \defskip medskip
 \quotes_language english
-\quotes_times 2
 \papercolumns 2
 \papersides 1
 \paperpagestyle default
+\tracking_changes false
+\output_changes true
+\end_header
 
-\layout Title
+\begin_body
 
+\begin_layout Title
 T.O.D.D.: Test-Oriented Development and Debugging (December 2006)
-\layout Author
+\end_layout
 
+\begin_layout Author
 Olivier A.
  Dagenais
 \begin_inset Foot
-collapsed false
+status open
 
-\layout Standard
-
+\begin_layout Standard
 O.
  A.
  Dagenais is a M.C.S.
  student at Carleton University, Ottawa, ON K1S 5B6 Canada (e-mail: olivier
  dot dagenais at gmail dot com)
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Abstract
+\end_layout
 
+\begin_layout Abstract
 The benefits of Test-Driven Development (TDD) can be appealing to many seeking
  to reduce the amount of time spent on a software project, but not all projects
  can implement the TDD methodology fully.
@@ -54,83 +61,93 @@ The benefits of Test-Driven Development (TDD) can be appealing to many seeking
  and a prototype software implementation in the form of an Eclipse plug-in
  is presented to support the adoption of this more pragmatic approach so
  that it can help write high quality software.
-\layout Keywords
+\end_layout
 
+\begin_layout Keywords
 automation, programming, software debugging, software testing
-\layout MarkBoth
+\end_layout
 
-
+\begin_layout MarkBoth
 \begin_inset ERT
-status Collapsed
+status collapsed
 
-\layout Standard
+\begin_layout Standard
+
 }{
-\end_inset 
+\end_layout
+
+\end_inset
 
 and this is for right pages
-\layout Section
+\end_layout
 
+\begin_layout Section
 Introduction
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset ERT
-status Collapsed
+status collapsed
 
-\layout Standard
+\begin_layout Standard
 
-\backslash 
+
+\backslash
 PARstart{A}{lthough}
-\end_inset 
+\end_layout
+
+\end_inset
 
  writing quality software on schedule and under budget is difficult, modern
  software development tools try to reduce the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 accidental difficulties
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  surrounding software project development so that contributors can focus
  on the projects' 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 essential difficulties
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  
 \begin_inset LatexCommand \cite{Brooks1987}
 
-\end_inset 
+\end_inset
 
 .
  Two such advancements are xUnit, the family of 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 code-driven testing frameworks
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  
 \begin_inset LatexCommand \cite{wiki:xunit}
 
-\end_inset 
+\end_inset
 
  and its companion methodology, Test-Driven Development (TDD) 
 \begin_inset LatexCommand \cite{wiki:tdd}
 
-\end_inset 
+\end_inset
 
 .
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Problem
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The TDD process involves programmers writing unit tests first, then writing
  just enough code to make the new tests pass, usually one test at a time.
  While this is a noble goal, software developers do not always have the
@@ -141,42 +158,43 @@ The TDD process involves programmers writing unit tests first, then writing
  -- can be adopted and consequently tests are written at about the same
  time as the code being tested, if not after.
  Unlike TDD, the tests in this case are not 
-\emph on 
+\emph on
 driving
-\emph default 
+\emph default
  the development but still support it to a lesser extent and therefore the
  development is said to be 
-\emph on 
+\emph on
 test-oriented
-\emph default 
+\emph default
 .
  Less code might be tested as a result, but that is the trade-off.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Some automation facilities are provided by modern Integrated Development
  Environments (IDE) to support the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 pure
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  test-driven approach.
  For example, both the Java Development Tools (JDT) 
 \begin_inset LatexCommand \cite{JDT}
 
-\end_inset 
+\end_inset
 
  of the Eclipse platform 
 \begin_inset LatexCommand \cite{EclipseFaq2006}
 
-\end_inset 
+\end_inset
 
  and Microsoft's Visual Studio 
 \begin_inset LatexCommand \cite{MsVs}
 
-\end_inset 
+\end_inset
 
  can offer to create a method stub for a new method whose interface was
  defined through the first instance of its use.
@@ -185,24 +203,26 @@ pure
  under consideration.
  To be clear, while Eclipse offers a 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 new JUnit Test Case
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  wizard which will generate a new associated test class (ATC) containing
  a test method stub for each of the methods of the class under test (CUT),
  this wizard does not support updating an existing ATC with new tests.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Motivation
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 This project's implementation is focused on the JUnit 
 \begin_inset LatexCommand \cite{JUnit}
 
-\end_inset 
+\end_inset
 
  integration with the JDT of the Eclipse platform due to the general availabilit
 y of the software and its source code as well as its extensibility features.
@@ -212,16 +232,17 @@ y of the software and its source code as well as its extensibility features.
  (TDN) add-in 
 \begin_inset LatexCommand \cite{Cansdale}
 
-\end_inset 
+\end_inset
 
  that provides integration with NUnit 
 \begin_inset LatexCommand \cite{NUnit}
 
-\end_inset 
+\end_inset
 
 .
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Because it is regarded as a beneficial practice toward increasing the quality
  of code, TDD adoption should be promoted to Eclipse JDT users.
  A potentially good way to do so would be to add some capabilities to the
@@ -230,8 +251,9 @@ Because it is regarded as a beneficial practice toward increasing the quality
  software and potentially toward TDD.
  The idea, therefore, is to allow TDD to be introduced progressively into
  software projects, so as to adversely impact them as little as possible.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Unit tests are usually written in a separate class than the CUT, and as
  such, templates are insufficient because they traditionally operate only
  locally (i.e.
@@ -243,180 +265,193 @@ Unit tests are usually written in a separate class than the CUT, and as
  Such a tool could prevent the writing of unit tests from disrupting the
  
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 flow
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  
 \begin_inset LatexCommand \cite{Spolsky:Ideas}
 
-\end_inset 
+\end_inset
 
  of programmers so they can better focus on the task at hand, rather than
  on manual and repetitive tasks.
-\layout Subsection
+\end_layout
 
-
+\begin_layout Subsection
 \begin_inset LatexCommand \label{sub:Goals}
 
-\end_inset 
+\end_inset
 
 Goals
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The goals of this project are to lower the barrier of entry and speed up
  the writing of unit tests such that more -- and better -- unit tests can
  be written than otherwise would be, and to help enforce a convention on
  said unit tests.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 These goals are to be validated according to the following metrics:
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{Goal:Write a test for a method}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a test for a method
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{Goal:Write a set of tests for a method}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a set of tests for a method
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{Goal:Write a set of tests for a class}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a set of tests for a class
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{Goal:Launch a single test}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to launch a single test for running or debugging
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Objectives
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 To meet the project's goals, the following features will be added to the
  Eclipse JDT:
-\layout Enumerate
+\end_layout
 
+\begin_layout Enumerate
 A context menu entry for the Java editor that allows the user to:
-\begin_deeper 
-\layout Enumerate
+\end_layout
 
-
+\begin_deeper
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{createMethodStub}
 
-\end_inset 
+\end_inset
 
 Create a JUnit test method stub in the associated JUnit TestCase class for
  the method in which the cursor is currently located
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{createTestFixture}
 
-\end_inset 
+\end_inset
 
 Create a JUnit test case class (test fixture) for the class in which the
  cursor is currently located.
  The current wizard will most likely be invoked with a few values initialized
  from the current context.
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{runTestMethod}
 
-\end_inset 
+\end_inset
 
 Run the JUnit test method in which the cursor is currently located
-\layout Enumerate
+\end_layout
 
-
+\begin_layout Enumerate
 \begin_inset LatexCommand \label{debugTestMethod}
 
-\end_inset 
+\end_inset
 
 Debug the JUnit test method in which the cursor is currently located
-\end_deeper 
-\layout Enumerate
+\end_layout
 
+\end_deeper
+\begin_layout Enumerate
 A context menu entry for the Java Outline that provides equivalent functionality
  to 
 \begin_inset LatexCommand \ref{createMethodStub}
 
-\end_inset 
+\end_inset
 
  and 
 \begin_inset LatexCommand \ref{createTestFixture}
 
-\end_inset 
+\end_inset
 
 
-\begin_deeper 
-\layout Enumerate
+\end_layout
 
+\begin_deeper
+\begin_layout Enumerate
 Note: The equivalent functionality to 
 \begin_inset LatexCommand \ref{runTestMethod}
 
-\end_inset 
+\end_inset
 
  and 
 \begin_inset LatexCommand \ref{debugTestMethod}
 
-\end_inset 
+\end_inset
 
  are already implemented
-\end_deeper 
-\layout Subsection
+\end_layout
 
+\end_deeper
+\begin_layout Subsection
 Outline
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 This paper will first cover some background and related work, followed by
  an account of the approach and design used.
  Results will then be presented, including an evaluation against the metrics
  identified earlier and a short conclusion will close with ideas for future
  work.
-\layout Section
+\end_layout
 
+\begin_layout Section
 Background
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 Eclipse is an open source community whose projects are focused on building
  an extensible development platform, runtimes and application frameworks
  for building, deploying and managing software across the entire software
  lifecycle 
 \begin_inset LatexCommand \cite{EclipseFaq2006}
 
-\end_inset 
+\end_inset
 
 .
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 The JDT project provides the tool plug-ins that implement a Java IDE supporting
  the development of any Java application, including Eclipse plug-ins 
 \begin_inset LatexCommand \cite{JDT}
 
-\end_inset 
+\end_inset
 
 .
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 This work was partially inspired by TDN, a software extension to Visual
  Studio which adds some capabilities to support TDD.
  Among its actions, it features a method-level unit test invocation mechanism
@@ -424,47 +459,50 @@ This work was partially inspired by TDN, a software extension to Visual
  Through some experimental work 
 \begin_inset LatexCommand \cite{Dagenais2006}
 
-\end_inset 
+\end_inset
 
 , TDN was extended to provide rudimentary test class and method generation,
  but that functionality was not very well integrated and the project was
  eventually abandoned due to lack of time.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Related Work
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 It is already possible to generate a JUnit test class that will test an
  existing class through Eclipse's 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 new JUnit Test Case
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  wizard, but it is not possible to use this wizard to augment an existing
  ATC with new methods.
  Another observation that leads this author to conclude that the wizard
  was most likely intended to be used in a 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 test very last
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  fashion is the class name that said wizard suggests: the name of the CUT
  suffixed with 
-\noun on 
+\noun on
 Test
-\noun default 
+\noun default
 .
  Because this appears to be the convention for JUnit, it seems to indicate
  that adding a new JUnit test class for every new set of tests against the
  CUT is not the intended use scenario.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Some context menu items for launching tests (in either debug or run mode)
  are currently contributed by the JDT to the text editor, but only at the
  class level.
@@ -474,39 +512,42 @@ Some context menu items for launching tests (in either debug or run mode)
  closest to the cursor in a Java editor and thus the user expectation is
  that some part of the text editor must already know what the currently-selected
  method is, yet does not use that information to launch unit tests.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The JDT also feature some code templates that can be inserted by means of
  the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 Content Assist
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  functionality, but only at the cursor's current location.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Some editions of Microsoft's Visual Studio apparently provide functionality
  similar to that proposed here, from a context menu in the source code editor
  
 \begin_inset LatexCommand \cite{Dockendorf}
 
-\end_inset 
+\end_inset
 
 .
  A thorough comparison was made difficult due to its prohibitive price.
-\layout Section
+\end_layout
 
-
+\begin_layout Section
 \begin_inset LatexCommand \label{sec:Approach}
 
-\end_inset 
+\end_inset
 
 Approach
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The preferred approach for adding features to Eclipse is to contribute some
  extensions to existing extension points and, if possible, contribute new
  extension points so that others may do the same.
@@ -516,27 +557,30 @@ The preferred approach for adding features to Eclipse is to contribute some
  instead created to clearly show the contributions involved.
  This was done, however, at the expense of violating encapsulation in some
  cases and possibly duplicating some code in others.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Due to the author's experience with Visual Studio and his relative inexperience
  with Eclipse (similarly for their respective extensions and extension mechanism
 s), the new features were designed to be exposed in context menus, as with
  the TDN add-in.
  The context menus' new actions were expected to consist mostly of 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 glue code
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  connecting the JDT with JUnit launching as well as with smart templating
  capabilities that write test method stubs.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Design
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The software's design was kept as simple and straightforward as possible
  by minimizing the number of indirections and abstractions.
  It is only near the end of the implementation that some minor abstractions
@@ -544,135 +588,141 @@ The software's design was kept as simple and straightforward as possible
  The class diagram featured in Fig.
 \begin_inset LatexCommand \ref{UML class diagram}
 
-\end_inset 
+\end_inset
 
  includes only the major classes.
  All classes written for this project are discussed briefly in this section,
  followed by an account of how the Eclipse extensions were used.
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Float figure
 placement t
 wide true
-collapsed false
+sideways false
+status open
 
-\layout Standard
-
-
+\begin_layout Standard
 \begin_inset Graphics
 	filename Actions Class Diagram.png
 	width 7in
 	keepAspectRatio
 
-\end_inset 
+\end_inset
 
 
-\layout Caption
+\end_layout
 
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{UML class diagram}
 
-\end_inset 
+\end_inset
 
 A UML class diagram showing the relationships between the 5 major classes.
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Subsubsection
+\end_layout
 
+\begin_layout Subsubsection
 
-\noun on 
+\noun on
 ActionBase
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The 
-\noun on 
+\noun on
 ActionBase
-\noun default 
+\noun default
  class implements the 
-\noun on 
+\noun on
 IObjectActionDelegate
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 IEditorActionDelegate
-\noun default 
+\noun default
  interfaces, which allows it to make contributions to the 
-\noun on 
+\noun on
 org.eclipse.ui.popupMenus
-\noun default 
+\noun default
  extension point for objects -- such as 
-\noun on 
+\noun on
 IType
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 IMethod
-\noun default 
+\noun default
  instances -- and editors -- in this case, the 
-\noun on 
+\noun on
 CompilationUnitEditor
-\noun default 
+\noun default
  -- respectively.
  The 
-\noun on 
+\noun on
 ActionBase
-\noun default 
+\noun default
  class's primary purpose is to abstract the selection and invocation mechanism
  so that the concrete actions, implemented as subclasses of 
-\noun on 
+\noun on
 ActionBase
-\noun default 
+\noun default
 , can simply operate on 
-\noun on 
+\noun on
 IType
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 IMethod
-\noun default 
+\noun default
  instances.
  This is done by having the 
-\noun on 
+\noun on
 IActionDelegate#run(IAction)
-\noun default 
+\noun default
  method, with occasional support from the 
-\noun on 
+\noun on
 IActionDelegate#selectionChanged(IAction, ISelection)
-\noun default 
+\noun default
  implementation, sort out what the selection really was, filter any unwanted
  items and then invoke the two abstract overloads to the 
-\noun on 
+\noun on
 run
-\noun default 
+\noun default
  method, as appropriate.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 New kinds of selections -- such as 
-\noun on 
+\noun on
 IFile
-\noun default 
+\noun default
  instances -- or user interface triggers could eventually be added to 
-\noun on 
+\noun on
 ActionBase
-\noun default 
+\noun default
  and all subclasses would benefit.
-\layout Subsubsection
+\end_layout
 
+\begin_layout Subsubsection
 
-\noun on 
+\noun on
 GenerateTestsAction
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The 
-\noun on 
+\noun on
 GenerateTestsAction
-\noun default 
+\noun default
  class is one such implementation of the 
-\noun on 
+\noun on
 ActionBase
-\noun default 
+\noun default
  class and is the biggest and most complex of the implemented classes.
  To support its purpose of generating test class and method stubs, it features
  methods for determining which class is the associated test class i.e., which
@@ -680,188 +730,197 @@ ActionBase
  such an associated test class if one did not already exist, methods for
  determining the line separator character(s) and methods for actually generating
  the contents of the generated items.
-\layout Subsubsection
+\end_layout
 
+\begin_layout Subsubsection
 
-\noun on 
+\noun on
 LaunchActionBase
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The 
-\noun on 
+\noun on
 LaunchActionBase
-\noun default 
+\noun default
  class was created when it was made obvious that the Eclipse JUnit launching
  mechanism was already parameterized for 
-\emph on 
+\emph on
 debug
-\emph default 
+\emph default
  and 
-\emph on 
+\emph on
 run
-\emph default 
+\emph default
  modes and thus the code could be re-used.
  This is exposed through the 
-\noun on 
+\noun on
 launch(IJavaElement, String)
-\noun default 
+\noun default
  protected method that subclasses are expected to call.
-\layout Subsubsection
+\end_layout
 
+\begin_layout Subsubsection
 
-\noun on 
+\noun on
 DebugTestsAction
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 RunTestsAction
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The 
-\noun on 
+\noun on
 DebugTestsAction
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 RunTestsAction
-\noun default 
+\noun default
  classes are very similar in their implementation, differing only in the
  
-\noun on 
+\noun on
 mode
-\noun default 
+\noun default
  parameter when calling their parent class' 
-\noun on 
+\noun on
 launch
-\noun default 
+\noun default
  method.
  In fact, this difference could even have been encoded as an instance field
  in the 
-\noun on 
+\noun on
 LaunchActionBase
-\noun default 
+\noun default
  class and thus the two classes could have differed only by how their constructo
 rs called the base class' constructor and contained nothing else because
  their 
-\noun on 
+\noun on
 run
-\noun default 
+\noun default
  overloads could have thus been pulled up to their superclass.
-\layout Subsubsection
+\end_layout
 
+\begin_layout Subsubsection
 
-\noun on 
+\noun on
 Activator
-\noun default 
+\noun default
 , 
-\noun on 
+\noun on
 SimpleSearchRequestor
-\noun default 
+\noun default
 , 
-\noun on 
+\noun on
 SimpleStructuredSelection
-\noun default 
+\noun default
 , 
-\noun on 
+\noun on
 GenerateTestsActionTest
-\noun default 
+\noun default
 , and 
-\noun on 
+\noun on
 TestingMethod
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Five other classes were written, but their roles are minor, relative to
  the other classes and thus their descriptions are brief.
  The 
-\noun on 
+\noun on
 Activator
-\noun default 
+\noun default
  class was generated by the Eclipse Plug-in Development Environment (PDE)
  wizard to control the plug-in's life cycle.
  The 
-\noun on 
+\noun on
 SimpleSearchRequestor
-\noun default 
+\noun default
  class was written to minimally satisfy the demands of the JDT's 
-\noun on 
+\noun on
 SearchEngine
-\noun default 
+\noun default
  class to provide an extension of the 
-\noun on 
+\noun on
 SearchRequestor
-\noun default 
+\noun default
  abstract class and simply accumulates search results -- in the form of
  
-\noun on 
+\noun on
 SearchMatch
-\noun default 
+\noun default
  instances -- in a 
-\noun on 
+\noun on
 List
-\noun default 
+\noun default
  and exposes them through its 
-\noun on 
+\noun on
 getResults
-\noun default 
+\noun default
  method.
  The idea behind the 
-\noun on 
+\noun on
 SimpleStructuredSelection
-\noun default 
+\noun default
  class is similar in that the 
-\noun on 
+\noun on
 launch
-\noun default 
+\noun default
  method of the 
-\noun on 
+\noun on
 JUnitLaunchShortcut
-\noun default 
+\noun default
  class was expecting an 
-\noun on 
+\noun on
 ISelection
-\noun default 
+\noun default
  interface implementation and a 
-\noun on 
+\noun on
 List
-\noun default 
+\noun default
 -based one was thus written.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The 
-\noun on 
+\noun on
 GenerateTestsActionTest
-\noun default 
+\noun default
  class contains a single unit test of the method code generation facilities
  of the 
-\noun on 
+\noun on
 GenerateTestsAction
-\noun default 
+\noun default
  class, as well as a minimal implementation of the 
-\noun on 
+\noun on
 IMethod
-\noun default 
+\noun default
  interface -- as the 
-\noun on 
+\noun on
 TestingMethod
-\noun default 
+\noun default
  class -- for testing purposes.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Decisions made
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Not only was the design and implementation of this project influenced by
  inexperience with Eclipse, it was also influenced by articles on Eclipse
  extensions and through the reverse-engineering of existing open-source
  Eclipse plug-ins such as JDT, JUnit, PMD 
 \begin_inset LatexCommand \cite{Pmd4Eclipse}
 
-\end_inset 
+\end_inset
 
 , and Jupiter 
 \begin_inset LatexCommand \cite{Yamashita2006}
 
-\end_inset 
+\end_inset
 
 .
  The time constraints on the implementation also contributed to trade-offs
@@ -869,148 +928,155 @@ Not only was the design and implementation of this project influenced by
  has not been verified by the author.
  This section discusses decisions that were likely made in haste and which
  may need to be revisited for future work.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Extensions were initially contributed to the 
-\noun on 
+\noun on
 popupMenus
-\noun default 
+\noun default
  extension point for the 
-\noun on 
+\noun on
 IFile
-\noun default 
+\noun default
  and 
-\noun on 
+\noun on
 IMethod
-\noun default 
+\noun default
  objects as they appeared to be the easiest to use and were the focus of
  a few tutorials.
  It was later discovered that 
-\noun on 
+\noun on
 IType
-\noun default 
+\noun default
  is more desirable than 
-\noun on 
+\noun on
 IFile
-\noun default 
+\noun default
  because there are more relevant user-interface invocation points in Eclipse
  for 
-\noun on 
+\noun on
 IType
-\noun default 
+\noun default
 , such as the class node in Eclipse's 
-\noun on 
+\noun on
 Outline
-\noun default 
+\noun default
  view.
  The plug-in definition and code were adjusted accordingly and a note was
  added to eventually restore the extension against an 
-\noun on 
+\noun on
 IFile
-\noun default 
+\noun default
  once it is discovered how to get Eclipse to not automatically convert otherwise
 -obvious 
-\noun on 
+\noun on
 IType
-\noun default 
+\noun default
  instances to 
-\noun on 
+\noun on
 IFile
-\noun default 
+\noun default
  instances.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Although the tutorials generally demonstrated the use of the 
-\noun on 
+\noun on
 IActionDelegate#selectionChanged(IAction, ISelection)
-\noun default 
+\noun default
  method to interpret and prepare the selection for use in a subsequent call
  to the 
-\noun on 
+\noun on
 IActionDelegate#run(IAction)
-\noun default 
+\noun default
  method, this was found to be an unreliable mechanism as 
-\noun on 
+\noun on
 selectionChanged
-\noun default 
+\noun default
  was not called as often as expected
 \begin_inset Foot
-collapsed true
+status collapsed
 
-\layout Standard
-
+\begin_layout Standard
 The event was fired for every text selection 
-\emph on 
+\emph on
 size
-\emph default 
+\emph default
  change, not for every cursor position change, which this author expected
  and considered a special case of text selection with a size of zero.
-\end_inset 
+\end_layout
+
+\end_inset
 
 .While instances of 
-\noun on 
+\noun on
 IStructuredSelection
-\noun default 
+\noun default
  could be reliably interpreted, most other implementations of 
-\noun on 
+\noun on
 ISelection
-\noun default 
+\noun default
  could not and consequently the 
-\noun on 
+\noun on
 run
-\noun default 
+\noun default
  method was tasked with attempting to detect a suitable selection if none
  had been detected previously.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 To simplify the implementation, the code generation functionality of the
  plug-in was implemented with parameterized, hard-coded strings.
  This has obviously meant a trade-off in flexibility and reconfigurability.
  Another simplification was the use of the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 internal
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  
-\noun on 
+\noun on
 JUnitLaunchShortcut
-\noun default 
+\noun default
  class of the 
-\noun on 
+\noun on
 org.eclipse.jdt.internal.junit.launcher
-\noun default 
+\noun default
  package.
  It provided functionality to invoke JUnit, but also caused Eclipse to emit
  a warning indicating it was not meant to be used from outside of the JDT
  plug-in.
-\layout Section
+\end_layout
 
+\begin_layout Section
 Results and Validation
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Results
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Table 
 \begin_inset LatexCommand \ref{SummaryTable}
 
-\end_inset 
+\end_inset
 
  summarizes the results of side-by-side comparisons of the tasks identified
  in section 
 \begin_inset LatexCommand \ref{sub:Goals}
 
-\end_inset 
+\end_inset
 
 .
  Full details of the comparisons such as what steps were counted can be
  found in Appendix 
 \begin_inset LatexCommand \ref{sec:Detailed-Results}
 
-\end_inset 
+\end_inset
 
 .
  The comparisons are made between the absence and the presence of the TODD
@@ -1019,20 +1085,19 @@ Table
 \begin_inset Float table
 placement h
 wide false
-collapsed false
+sideways false
+status open
 
-\layout Caption
-
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{SummaryTable}
 
-\end_inset 
+\end_inset
 
 Summary results of side-by-side comparisons
-\layout Standard
+\end_layout
 
-
-\begin_inset  Tabular
+\begin_layout Standard
+\begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="4">
 <features>
 <column alignment="left" valignment="bottom" width="20col%">
@@ -1043,207 +1108,231 @@ Summary results of side-by-side comparisons
 <cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Task
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT + TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Write a test for a method
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Write a set of tests for a method
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 8 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 8 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Write a set of tests for a class
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 8 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Launch a single test
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 n/a
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 3 steps
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 </lyxtabular>
 
-\end_inset 
+\end_inset
 
 
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 No ATC
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 ATC already exists
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Validation
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Broadly speaking, the results are favorable and indeed show that the number
  of steps required to create, run and debug test classes and test methods
  was reduced by an average of three steps.
@@ -1251,11 +1340,13 @@ Broadly speaking, the results are favorable and indeed show that the number
  the users no longer need to make the distinction between the presence and
  absence of an existing ATC because TODD will detect this situation and
  act accordingly.
-\layout Section
+\end_layout
 
+\begin_layout Section
 Conclusion
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 In general, given the objectives have been met, the goals could be said
  to have been fulfilled.
  However, because the project introduced new functionality, the effectiveness
@@ -1266,25 +1357,28 @@ In general, given the objectives have been met, the goals could be said
  Eclipse JDT template facilities that could have avoided having the user
  type the method stub in its entirety in the Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
  scenarios.
  The choice of metrics was therefore not optimal.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 It is also the case that, although TODD mostly works, it is not complete
  as of this writing and, consequently, it is possible that some of its defects
  could potentially slow down the user to the point of negating TODD's benefits.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Future Work
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 TODD is a useful proof-of-concept project, but, as discussed in section
  
 \begin_inset LatexCommand \ref{sec:Approach}
 
-\end_inset 
+\end_inset
 
 , some pieces might have been better suited as modifications or enhancements
  to existing Eclipse and JDT plug-ins.
@@ -1292,8 +1386,9 @@ TODD is a useful proof-of-concept project, but, as discussed in section
  relevant pieces of code so as to leverage functionality that is already
  provided by Eclipse and JDT, because the less code that is written, the
  less bugs are likely to be introduced.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Other future work could investigate the possibility of invoking the existing
  Eclipse JDT templates, thus enabling the reconfigurability of the generated
  code on a per-workspace and per-project basis.
@@ -1301,8 +1396,9 @@ Other future work could investigate the possibility of invoking the existing
  templates that generate a stubbed call to the method under test with local
  variables matching the parameters initialized to some sensible default
  values.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 More appropriate user-interface triggers could also be researched, such
  as exposing TODD's test-generation functionality through the Eclipse JDT
  quick-assist extensions, since the test generation is indeed sensitive
@@ -1315,47 +1411,53 @@ More appropriate user-interface triggers could also be researched, such
  It may even be possible to integrate the capabilities of Testar 
 \begin_inset LatexCommand \cite{Google:Testar}
 
-\end_inset 
+\end_inset
 
  in determining the set of unit tests to re-run as a result of changing
  some of the source code.
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Lastly, improvement of the evaluation metrics and real-world testing by
  programmers other than the author would most likely discover more defects
  as well as uncover ideas for new functionality.
-\layout Appendices
-\start_of_appendix 
+\end_layout
 
-\begin_inset Note
-collapsed true
+\begin_layout Appendices
+\start_of_appendix
+\begin_inset Note Note
+status collapsed
 
-\layout Standard
-
+\begin_layout Standard
 This note is only here so to the Appendices macro doesn't disappear
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Section
+\end_layout
 
+\begin_layout Section
 Source Code
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Methodology
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The plug-in software implementation was 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 grown
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  
 \begin_inset LatexCommand \cite{Brooks1987}
 
-\end_inset 
+\end_inset
 
  through small and frequent iterations.
  The Subclipse plug-in for Eclipse was used to communicate with a Subversion
@@ -1363,11 +1465,11 @@ grown
  Each commit was fully documented and any missing functionality and potential
  defects have been identified with 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 to dos
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  -- specially-formatted comments in the source code that indicate work that
  still needs to be done.
@@ -1378,71 +1480,79 @@ to dos
  Also, the very tool that would have facilitated the writing and execution
  of unit tests was, by definition, under heavy development at the time and
  hence could not be easily used.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 How to obtain
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The source code has been published to Google Code's Project Hosting as the
  project named 
-\noun on 
+\noun on
 testoriented
-\noun default 
+\noun default
 , which can be reached at: 
 \begin_inset LatexCommand \htmlurl{http://code.google.com/p/testoriented/}
 
-\end_inset 
+\end_inset
 
 .
  A pre-built version -- in the form of a Java Archive file which may be
  deployed into Eclipse's 
-\noun on 
+\noun on
 plugins
-\noun default 
+\noun default
  folder -- can be obtained from 
 \begin_inset LatexCommand \htmlurl{http://tinyurl.com/s9nza}
 
-\end_inset 
+\end_inset
 
 .
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 License
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The source code has been released under the terms of the MIT License, which
  is reproduced below:
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 Copyright (c) 2006 Olivier Dagenais
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 Permission is hereby granted, free of charge, to any person obtaining a
  copy of this software and associated documentation files (the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 Software
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
 ), to deal in the Software without restriction, including without limitation
  the rights to use, copy, modify, merge, publish, distribute, sublicense,
  and/or sell copies of the Software, and to permit persons to whom the Software
  is furnished to do so, subject to the following conditions:
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
-\layout Quote
+\end_layout
 
+\begin_layout Quote
 THE SOFTWARE IS PROVIDED 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 AS IS
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
 , WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
  TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
@@ -1451,84 +1561,96 @@ AS IS
  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE
 , ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
-\layout Section
+\end_layout
 
+\begin_layout Section
 Glossary of Acronyms
-\layout Description
+\end_layout
 
+\begin_layout Description
 ATC Associated Test Class
-\layout Description
+\end_layout
 
+\begin_layout Description
 CUT Class Under Test
-\layout Description
+\end_layout
 
+\begin_layout Description
 GUI Graphical User Interface
-\layout Description
+\end_layout
 
+\begin_layout Description
 IDE Integrated Development Environment
-\layout Description
+\end_layout
 
+\begin_layout Description
 JDT Java Development Tools
-\layout Description
+\end_layout
 
+\begin_layout Description
 PDE Plug-in Development Environment
-\layout Description
+\end_layout
 
+\begin_layout Description
 TDN TestDriven.Net
-\layout Description
+\end_layout
 
+\begin_layout Description
 TDD Test-Driven Development
-\layout Section
+\end_layout
 
+\begin_layout Section
 Detailed Results
 \begin_inset LatexCommand \label{sec:Detailed-Results}
 
-\end_inset 
+\end_inset
 
 
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The following sub-sections illustrate the results of the side-by-side comparison
 s of the tasks identified as Goals, in section 
 \begin_inset LatexCommand \ref{sub:Goals}
 
-\end_inset 
+\end_inset
 
 .
  The comparisons are made between the absence and the presence of the TODD
  plug-in, with the additional distinction, in the former case, of the absence
  and presence of an existing ATC.
  TODD hides this distinction from users.
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Write a test for a method
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Starting from the method for which a test is to be written, Table 
 \begin_inset LatexCommand \vref{Table:WriteTestForMethod}
 
-\end_inset 
+\end_inset
 
  lists the steps taken for each alternative.
  TODD takes only 4 steps, while the other alternatives take 7.
 \begin_inset Float table
 placement p
 wide true
-collapsed false
+sideways false
+status open
 
-\layout Caption
-
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{Table:WriteTestForMethod}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a test for a method, with and without
  TODD
-\layout Standard
+\end_layout
 
-
-\begin_inset  Tabular
+\begin_layout Standard
+\begin_inset Tabular
 <lyxtabular version="3" rows="8" columns="4">
 <features>
 <column alignment="center" valignment="top" width="0">
@@ -1539,386 +1661,425 @@ Number of steps necessary to write a test for a method, with and without
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT + TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 1
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 File
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Window
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 invoke the context menu
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 2
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 New
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Show View
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 3
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 JUnit
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Package Explorer
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Generate test(s)
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Next
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 open associated test class
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 5
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 select method to test
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 position cursor at appropriate insertion point
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Finish
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 write 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 
-\noun on 
+\noun on
 @Test public void _testmethodname_ ( ) { }
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 insert test code inside method body
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 </lyxtabular>
 
-\end_inset 
+\end_inset
 
 
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 No ATC
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 ATC already exists
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Write a set of tests for a method
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Starting from the method for which more than one test is to be written,
  Table 
 \begin_inset LatexCommand \vref{Table:WriteSetOfTestsForMethod}
 
-\end_inset 
+\end_inset
 
  lists the steps taken for each alternative.
  The TODD alternative edges out the other two by 2 steps, although the 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 loop
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  is slightly longer.
  On the other hand, the loop's operations are simpler.
 \begin_inset Float table
 placement p
 wide true
-collapsed true
+sideways false
+status collapsed
 
-\layout Caption
-
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{Table:WriteSetOfTestsForMethod}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a set of tests for a method, with and
  without TODD
-\layout Standard
+\end_layout
 
-
-\begin_inset  Tabular
+\begin_layout Standard
+\begin_inset Tabular
 <lyxtabular version="3" rows="9" columns="4">
 <features>
 <column alignment="left" valignment="top" width="0">
@@ -1929,425 +2090,467 @@ Number of steps necessary to write a set of tests for a method, with and
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT + TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 1
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 File
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Window
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 invoke the context menu
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 2
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 New
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Show View
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 3
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 JUnit Test Case
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Package Explorer
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Generate test(s)
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Next
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 open associated test class
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 5
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 select method to test
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 position cursor at appropriate insertion point
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 switch back to the method
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Finish
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 write 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 
-\noun on 
+\noun on
 @Test public void _testmethodname_ ( ) { }
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 repeat steps 1-5 for the rest of the tests
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 insert test code inside method body
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 8
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 repeat steps 6-7 of Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 repeat steps 6-7 for the rest of the tests
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 </lyxtabular>
 
-\end_inset 
+\end_inset
 
 
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 No ATC
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 ATC already exists
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Write a set of tests for a class
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Starting from the class for which a test is to be written for each method,
  Table 
 \begin_inset LatexCommand \vref{Table:WriteSetOfTestsForClass}
 
-\end_inset 
+\end_inset
 
  lists the steps taken for each alternative.
  TODD competes well with the Eclipse JDT
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
  case and really shines against the more common scenario represented by
  Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 .
 \begin_inset Float table
 placement p
 wide true
-collapsed true
+sideways false
+status collapsed
 
-\layout Caption
-
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{Table:WriteSetOfTestsForClass}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to write a set of tests for a class, with and
  without TODD
-\layout Standard
+\end_layout
 
-
-\begin_inset  Tabular
+\begin_layout Standard
+\begin_inset Tabular
 <lyxtabular version="3" rows="9" columns="4">
 <features>
 <column alignment="left" valignment="top" width="0">
@@ -2358,388 +2561,434 @@ Number of steps necessary to write a set of tests for a class, with and
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT + TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 1
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 File
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Window
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 invoke the context menu
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 2
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 New
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Show View
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 3
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 JUnit Test Case
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Package Explorer
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Generate test(s)
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Next
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 open associated test class
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 for each method, replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 5
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 selecting the class should select all methods
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 position cursor at appropriate insertion point
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Finish
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 write 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 
-\noun on 
+\noun on
 @Test public void _testmethodname_ ( ) { }
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 7
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 for each method, replace generated 
 \begin_inset Quotes eld
-\end_inset 
+\end_inset
 
 fail
 \begin_inset Quotes erd
-\end_inset 
+\end_inset
 
  line with test code
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 insert test code inside method body
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 8
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 repeat steps 6-7 for the rest of the tests
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 </lyxtabular>
 
-\end_inset 
+\end_inset
 
 
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{a}}$
-\end_inset 
+\end_inset
 
 No ATC
-\layout Standard
+\end_layout
 
-
+\begin_layout Standard
 \begin_inset Formula $^{\textrm{b}}$
-\end_inset 
+\end_inset
 
 ATC already exists
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Subsection
+\end_layout
 
+\begin_layout Subsection
 Launch a single test for running or debugging
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 Starting from the test method that is to be launched, in the Java editor,
  Table 
 \begin_inset LatexCommand \vref{Table:LaunchTest}
 
-\end_inset 
+\end_inset
 
  lists the steps taken for both alternatives.
  TODD works as advertised here and indeed avoids the user having to show
@@ -2747,21 +2996,20 @@ Starting from the test method that is to be launched, in the Java editor,
 \begin_inset Float table
 placement p
 wide true
-collapsed true
+sideways false
+status collapsed
 
-\layout Caption
-
-
+\begin_layout Caption
 \begin_inset LatexCommand \label{Table:LaunchTest}
 
-\end_inset 
+\end_inset
 
 Number of steps necessary to launch a single test for running or debugging,
  with and without TODD
-\layout Standard
+\end_layout
 
-
-\begin_inset  Tabular
+\begin_layout Standard
+\begin_inset Tabular
 <lyxtabular version="3" rows="7" columns="3">
 <features>
 <column alignment="center" valignment="top" width="0">
@@ -2771,219 +3019,248 @@ Number of steps necessary to launch a single test for running or debugging,
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 Eclipse JDT + TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 1
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Window
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 invoke context menu
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 2
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Show View
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 TODD
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 3
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Outline
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Run JUnit tests(s)
-\noun default 
+\noun default
  (or 
-\noun on 
+\noun on
 Debug JUnit test(s)
-\noun default 
+\noun default
 )
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 4
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 invoke context menu
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 5
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 Run As
-\noun default 
+\noun default
  (or 
-\noun on 
+\noun on
 Debug As
-\noun default 
+\noun default
 )
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 <row topline="true" bottomline="true">
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
-
+\begin_layout Standard
 6
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-
-\noun on 
+\noun on
 JUnit Test
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 <cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
-\layout Standard
+\begin_layout Standard
 
-\end_inset 
+\end_layout
+
+\end_inset
 </cell>
 </row>
 </lyxtabular>
 
-\end_inset 
+\end_inset
 
 
-\end_inset 
+\end_layout
+
+\end_inset
 
 
-\layout Section*
+\end_layout
 
+\begin_layout Section*
 Acknowledgment
-\layout Standard
+\end_layout
 
+\begin_layout Standard
 The author would like to thank Jamie Cansdale for his review and comments
  on a draft of this paper, as well as his suggestion for a "go to test"
  feature.
@@ -2992,25 +3269,34 @@ The author would like to thank Jamie Cansdale for his review and comments
  draft.
  Lastly, the author would like to thank Stefan Xenos for a thorough review
  of the final version.
-\layout Standard
+\end_layout
+
+\begin_layout Standard
+\begin_inset LatexCommand \bibtex[IEEEtran]{TODD}
+
+\end_inset
 
 
-\begin_inset LatexCommand \BibTeX[IEEEtran]{TODD}
+\end_layout
 
-\end_inset 
-
-
-\layout Standard
-
-
+\begin_layout Standard
 \begin_inset ERT
-status Collapsed
+status collapsed
 
-\layout Standard
-% This LaTeX comment is needed to force LyX to generate two separate environments
-\newline 
+\begin_layout Standard
 
-\end_inset 
+% This LaTeX comment is needed to force LyX to generate two separate environment
+s
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\end_inset
 
 
-\the_end
+\end_layout
+
+\end_body
+\end_document
